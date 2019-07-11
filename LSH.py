@@ -5,7 +5,6 @@ import pickle
 import textdistance
 import time
 
-
 def save_lsh(obj, path="model"):
     with open(path, 'wb') as f:
         pickle.dump(obj, f)
@@ -39,20 +38,22 @@ def train(data, perms):
 
 def metric(query, doc, m=""):
     (tag,text) = doc.split("]")
-    if m == "J":
+    if m == "jac":
         jac = textdistance.Jaccard()
         value = "%.2f" % jac(query,text)
-    elif m == "Lev":
+    elif m == "lev":
         lev = textdistance.Levenshtein()
         value = str(lev.distance(query,text))
     else:
         value = 'NaN'
 
-    return {'file': tag[1:].split("#")[0],'body': text, 'value': value}
+    return {'docname': tag[1:].split("#")[0],'text': text, m: value}
+    # return {'text': tag, m: value}
 
 def predict(text, perms, num_results, forest):
-    # Lev, J
-    METRICS = "Lev"
+    # METRICS = "jac"
+    METRICS = "lev"
+
     print("METRICA",METRICS)
 
     start_time = time.time()
@@ -63,24 +64,19 @@ def predict(text, perms, num_results, forest):
 
     idx_array = np.array(forest.query(m, num_results))
 
-    timing = "%.4f ms" % ((time.time() - start_time) * 1000)
+    timing = "%.2f ms" % ((time.time() - start_time) * 1000)
     print('It took {} ms to query forest.'.format(timing))
 
     if len(idx_array) == 0:
-        return {
-            'result': None,
-            'time': timing
-        }  # if your query is empty, return none
-
-    result = [ metric(text,doc_retrival,m=METRICS) for doc_retrival in idx_array]
-    # result = database.iloc[idx_array]['title']
-    res_json = []
-    if METRICS == "Lev":
-        res_json = sorted(result, key = lambda i: int(i['value']))
+        res_json = []
     else:
-        res_json = sorted(result, key = lambda i: i['value'], reverse=True)
+        result = [ metric(text,doc_retrival,m=METRICS) for doc_retrival in idx_array]
+        if METRICS == "lev":
+            res_json = sorted(result, key = lambda i: int(i[METRICS]))
+        else:
+            res_json = sorted(result, key = lambda i: i[METRICS], reverse=True)
 
-    return {'query': text,'result': res_json, 'time': timing }
+    return {'query': text,'data': res_json, 'time': timing }
 
 
 
