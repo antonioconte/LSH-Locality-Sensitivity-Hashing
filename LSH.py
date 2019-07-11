@@ -1,5 +1,6 @@
 import numpy as np
 from preprocess import utils
+from tqdm import tqdm
 from datasketch import MinHash, MinHashLSHForest
 import pickle
 import textdistance
@@ -18,7 +19,7 @@ def load_lsh(path="model"):
 def train(data, perms):
     start_time = time.time()
     minhash = []
-    for item in data:
+    for item in tqdm(data,desc="MinHash Docs.."):
         # tag = item['tag']
         tokens = item['data']
         m = MinHash(num_perm=perms)
@@ -36,28 +37,36 @@ def train(data, perms):
 
     return forest
 
-def metric(query, doc, m=""):
+def metric(query, doc, normalizer, m=""):
     (tag,text) = doc.split("]")
+    text_norm = " ".join(normalizer.convert(text, False))
+    query_norm = " ".join(normalizer.convert(query, False))
+
+    # rm num da query e da text
     if m == "jac":
         jac = textdistance.Jaccard()
-        value = "%.2f" % jac(query,text)
+        value = "%.2f" % jac(query_norm,text_norm)
     elif m == "lev":
         lev = textdistance.Levenshtein()
-        value = str(lev.distance(query,text))
+        value = int(lev.distance(query_norm,text_norm))
+        # value = float(lev.distance(query_norm,text_norm))/float(len(query))
+        # value = lev.normalized_similarity(query_norm,text_norm)
+        # value = round(value,2)
     else:
         value = 'NaN'
 
     return {'docname': tag[1:].split("#")[0],'text': text, m: value}
     # return {'text': tag, m: value}
 
-def predict(text, perms, num_results, forest):
+def predict(text, perms, num_results, forest,normalizer):
     # METRICS = "jac"
     METRICS = "lev"
 
     print("METRICA",METRICS)
 
     start_time = time.time()
-    tokens = utils.preprocess(text)
+    # senza divisione in ngrammi == False
+    tokens = normalizer.convert(text,False)
     m = MinHash(num_perm=perms)
     for s in tokens:
         m.update(s.encode('utf8'))
@@ -70,9 +79,9 @@ def predict(text, perms, num_results, forest):
     if len(idx_array) == 0:
         res_json = []
     else:
-        result = [ metric(text,doc_retrival,m=METRICS) for doc_retrival in idx_array]
+        result = [ metric(text,doc_retrival,normalizer, m=METRICS) for doc_retrival in idx_array]
         if METRICS == "lev":
-            res_json = sorted(result, key = lambda i: int(i[METRICS]))
+            res_json = sorted(result, key = lambda i: i[METRICS])
         else:
             res_json = sorted(result, key = lambda i: i[METRICS], reverse=True)
 

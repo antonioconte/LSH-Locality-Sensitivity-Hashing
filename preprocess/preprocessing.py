@@ -28,7 +28,7 @@ def extract_phrase(filename,soup,nlp,min_count=5):
     return res
 
 # type = Sezione-Paragrafo-Ngramma-Frase "SPNF"
-def process_doc(path, file, nlp, type="F"):
+def process_doc(path, file, nlp,normalizer, type="F"):
     html_txt = open(path + file, 'r', encoding='utf-8').read()
     soup = BeautifulSoup(html_txt, 'html.parser')
     _ = [script.extract() for script in soup('p', {'class': 'doc-ti'})]
@@ -44,20 +44,16 @@ def process_doc(path, file, nlp, type="F"):
         res = {}
     return res
 
-def processing_data(filepath, nlp, Type):
+def processing_data(filepath, nlp, Type,normalizer):
     # ~~~~~~ LOAD DATA ~~~~
     file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
     # PROCESSING DATA
     data = [
         obj
         for file in tqdm(file_list,desc="Loading File from {}".format(filepath))
-            for obj in process_doc(filepath, file, nlp, type=Type)
+            for obj in process_doc(filepath, file, nlp, normalizer, type=Type)
     ]
     return data
-
-
-
-
 
 
 def main():

@@ -5,19 +5,48 @@ import spacy
 # NORMALIZATION
 # WORD LIST
 
-class TextPipeline:
-    def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm")
+import re
 
-    def convert(self,text):
+
+class TextPipeline:
+    def __init__(self,nlp,size="sm"):
+        self.size = size # lg
+        self.nlp = nlp
+
+    def generate_ngrams(self, s, n=5):
+        if len(s) < 5:
+            n = len(s)
+
+        s = " ".join(s)
+        # Convert to lowercases
+        s = s.lower()
+
+        # Replace all none alphanumeric characters with spaces
+        # s = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
+
+        # Break sentence in the token, remove empty tokens
+        tokens = [token for token in s.split(" ") if token != ""]
+
+        # Use the zip function to help us generate n-grams
+        # Concatentate the tokens into ngrams and return
+        ngrams = zip(*[tokens[i:] for i in range(n)])
+        return [" ".join(ngram) for ngram in ngrams]
+
+    def convert(self,text,divNgram=True):
         text = " ".join(text.split())
         doc = self.nlp(text)
         words = []
+        # TODO: marcare soggetto qui con dependency parser
         for token in doc:
             if not token.is_stop and token.is_alpha:
                 # print("\t",token.text,token.lemma_,token.pos_,)
                 words.append(token.lemma_.lower())
-        return words
+            elif token.lemma_.isnumeric():
+                words.append("<NUM>")
+        if divNgram:
+             return self.generate_ngrams(words)
+        else:
+            return words
 
 
 
