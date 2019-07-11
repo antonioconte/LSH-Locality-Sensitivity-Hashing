@@ -1,32 +1,18 @@
-from os import listdir
-from os.path import isfile, join
 from preprocess import preprocessing
 import json
 import spacy
-from tqdm import tqdm
+
+
 permutations = 128
 num_recommendations = 5
 
-def processing_data(filepath, nlp, Type):
-    # ~~~~~~ LOAD DATA ~~~~
-    file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
-    # PROCESSING DATA
-    data = [
-        obj
-        for file in tqdm(file_list,desc="Loading File from {}".format(filepath))
-            for obj in preprocessing.process_doc(filepath, file, nlp, type=Type)
-    ]
-    return data
-
-
 nlp = spacy.load('en_core_web_sm')
 filepath = 'dataset_html/'
-data = processing_data(filepath,nlp,"F")
+data = preprocessing.processing_data(filepath,nlp,"F")
 
-
-print(json.dumps(data, indent=4, sort_keys=True))
+# print(json.dumps(data, indent=4, sort_keys=True))
 # print(len(data))
-exit(1)
+# exit(1)
 
 # OLD VERSION
 # import LSH2 as LSH

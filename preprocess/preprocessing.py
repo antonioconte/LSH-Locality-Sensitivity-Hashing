@@ -1,3 +1,6 @@
+from os import listdir
+from os.path import isfile, join
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from preprocess import utils
 
@@ -29,11 +32,30 @@ def process_doc(path, file, nlp, type="F"):
     html_txt = open(path + file, 'r', encoding='utf-8').read()
     soup = BeautifulSoup(html_txt, 'html.parser')
     _ = [script.extract() for script in soup('p', {'class': 'doc-ti'})]
+    res = {}
+
     if type == "F":
         res = extract_phrase(file,soup,nlp)
-    else:
+    elif type == "S":
+        res = {}
+    elif type == "P":
+        res = {}
+    elif type == "N":
         res = {}
     return res
+
+def processing_data(filepath, nlp, Type):
+    # ~~~~~~ LOAD DATA ~~~~
+    file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
+    # PROCESSING DATA
+    data = [
+        obj
+        for file in tqdm(file_list,desc="Loading File from {}".format(filepath))
+            for obj in process_doc(filepath, file, nlp, type=Type)
+    ]
+    return data
+
+
 
 
 
