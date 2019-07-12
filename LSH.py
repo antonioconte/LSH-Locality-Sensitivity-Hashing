@@ -49,9 +49,12 @@ def metric(query, doc, normalizer, m=""):
     elif m == "lev":
         lev = textdistance.Levenshtein()
         value = int(lev.distance(query_norm,text_norm))
+
+    elif m == "lev_sim":
+        lev = textdistance.Levenshtein()
         # value = float(lev.distance(query_norm,text_norm))/float(len(query))
-        # value = lev.normalized_similarity(query_norm,text_norm)
-        # value = round(value,2)
+        value = lev.normalized_similarity(query_norm, text_norm)
+        value = round(value, 2)
     else:
         value = 'NaN'
 
@@ -60,6 +63,7 @@ def metric(query, doc, normalizer, m=""):
 
 def predict(text, perms, num_results, forest,normalizer):
     # METRICS = "jac"
+    # METRICS = "lev_sim"
     METRICS = "lev"
 
     print("METRICA",METRICS)

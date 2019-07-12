@@ -44,9 +44,13 @@ def process_doc(path, file, nlp,normalizer, type="F"):
         res = {}
     return res
 
-def processing_data(filepath, nlp, Type,normalizer):
+def processing_data(filepath, nlp, Type,normalizer,NumFile = 0):
     # ~~~~~~ LOAD DATA ~~~~
-    file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
+    if NumFile == 0:
+        file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
+    else:
+        file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))][:NumFile]
+
     # PROCESSING DATA
     data = [
         obj

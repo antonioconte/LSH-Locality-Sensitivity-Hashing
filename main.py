@@ -3,12 +3,12 @@ import json
 import spacy
 import LSH
 from preprocess.text_pipeline import TextPipeline
+import config
 
-permutations = 128
-num_recommendations = 5
 
-# ~~~~~~ TRAIN ~~~~~~~~
+# ~~~~~ TRAIN ~~~~~~~~
 def train(type):
+    permutations = config.permutations
     # --------------------- FASE 1 -----------------------------#
     # DATO IL PATH CONTENENTE I DOCUMENTI
     # SI SCEGLIE IL TIPO DI PARTE INTERESSATA
@@ -19,12 +19,12 @@ def train(type):
     normalizer = TextPipeline(nlp)
 
     filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
-    data = preprocessing.processing_data(filepath,nlp,"F",normalizer)
+    data = preprocessing.processing_data(filepath,nlp,"F",normalizer,NumFile = 0)
 
     # print(json.dumps(data, indent=4, sort_keys=True))
     # print(len(data))
     # exit(1)
-    #------------------------------------------------------------#
+    #-----------------------------------------------------------#
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
@@ -32,17 +32,25 @@ def train(type):
 
 
 # ~~~~~~~ TEST ~~~~~~~~
-def test(text,type):
+def test(query,type):
+    num_recommendations = config.num_recommendations
+    permutations = config.permutations
+
     nlp = spacy.load('en_core_web_sm')
     normalizer = TextPipeline(nlp)
     lsh = LSH.load_lsh("./model/model"+ type)
-    result = LSH.predict(title, permutations, num_recommendations, lsh,normalizer)
+    import time
+    start_time = time.time()
+    result = LSH.predict(query, permutations, num_recommendations, lsh,normalizer)
     print(json.dumps(result, indent=4, sort_keys=True))
+    timing = "Total Time: %.2f ms" % ((time.time() - start_time) * 1000)
+    print(timing)
 
-title = """On operator in question is Le Seysselan GAEC, Vallod, SEYSSEL."""
-# title = """this is a european format 2332"""
-
-test(title,"F")
+if __name__ == '__main__':
+    query = """
+        This Decision will be applicable from this date of publication of the Commission Recommendation.
+    """
+    test(query,"F")
 # train("F")
 
 
