@@ -1,11 +1,11 @@
 import numpy as np
 from preprocess import utils
+from utils import metrics
 from tqdm import tqdm
 from datasketch import MinHash, MinHashLSHForest
 import pickle
-import textdistance
 import time
-
+import config
 def save_lsh(obj, path="model"):
     with open(path, 'wb') as f:
         pickle.dump(obj, f)
@@ -37,34 +37,9 @@ def train(data, perms):
 
     return forest
 
-def metric(query, doc, normalizer, m=""):
-    (tag,text) = doc.split("]")
-    text_norm = " ".join(normalizer.convert(text, False))
-    query_norm = " ".join(normalizer.convert(query, False))
-
-    # rm num da query e da text
-    if m == "jac":
-        jac = textdistance.Jaccard()
-        value = "%.2f" % jac(query_norm,text_norm)
-    elif m == "lev":
-        lev = textdistance.Levenshtein()
-        value = int(lev.distance(query_norm,text_norm))
-
-    elif m == "lev_sim":
-        lev = textdistance.Levenshtein()
-        # value = float(lev.distance(query_norm,text_norm))/float(len(query))
-        value = lev.normalized_similarity(query_norm, text_norm)
-        value = round(value, 2)
-    else:
-        value = 'NaN'
-
-    return {'docname': tag[1:].split("#")[0],'text': text, m: value}
-    # return {'text': tag, m: value}
 
 def predict(text, perms, num_results, forest,normalizer):
-    # METRICS = "jac"
-    # METRICS = "lev_sim"
-    METRICS = "lev"
+    METRICS = config.METRICS
 
     print("METRICA",METRICS)
 
@@ -83,7 +58,7 @@ def predict(text, perms, num_results, forest,normalizer):
     if len(idx_array) == 0:
         res_json = []
     else:
-        result = [ metric(text,doc_retrival,normalizer, m=METRICS) for doc_retrival in idx_array]
+        result = [ metrics.metric(text,doc_retrival,normalizer, m=METRICS) for doc_retrival in idx_array]
         if METRICS == "lev":
             res_json = sorted(result, key = lambda i: i[METRICS])
         else:

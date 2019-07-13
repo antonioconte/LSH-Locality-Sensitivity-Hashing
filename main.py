@@ -47,8 +47,12 @@ def test(query,type):
     print(timing)
 
 if __name__ == '__main__':
+    # query = """
+    #     This Decision will be applicable from this date of publication of the Commission Recommendation.
+    # """
+
     query = """
-        This Decision will be applicable from this date of publication of the Commission Recommendation.
+    Reporting requirement under Article 3 of the Euratom Treaty have been explain Commission Recommendation 2000-47455/Euratom.
     """
     test(query,"F")
 # train("F")
