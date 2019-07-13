@@ -1,9 +1,12 @@
 import re
 
-def preprocess(text):
+def preprocess(text,k=3):
     text = re.sub(r'[^\w\s]', '', text)
     tokens = text.lower()
+    # tokens = tokens.removestopword()
+    # tokens = stemming
     tokens = tokens.split()
+    tokens = [" ".join(tokens[i:i + k]) for i in range(len(tokens) - k + 1)]
     return tokens
 
 def cleanhtml(raw_html):

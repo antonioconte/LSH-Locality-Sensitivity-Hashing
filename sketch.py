@@ -18,10 +18,10 @@ def train(type):
     nlp = spacy.load('en_core_web_sm')
     normalizer = TextPipeline(nlp)
 
-    filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
-    data = preprocessing.processing_data(filepath,nlp,"F",normalizer,NumFile = 0)
+    filepath = config.filepath
+    data = preprocessing.processing_data(filepath,nlp,type,normalizer)
 
-    # print(json.dumps(data, indent=4, sort_keys=True))
+    print(json.dumps(data, indent=4, sort_keys=True))
     # print(len(data))
     # exit(1)
     #-----------------------------------------------------------#
@@ -47,15 +47,18 @@ def test(query,type):
     print(timing)
 
 if __name__ == '__main__':
+    # train("F")
+    #
+    query ="the Commission submitted the 24 June 2009 a request to the Authority for further advice on a number of elements in relation to the submitted application"
+    # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them, The health claim set out in the Annex to this Regulation shall not be included in the Community list of permitted claims as provided for in Article 13(3) of Regulation (EC) This Decision will be applicable from this date of publication of the Commission Recommendation."""
+    # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee
+    # on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them,
+    # The health claim set out in the Annex to this Regulation shall not be included in the Community
+    # list of permitted claims as provided for in Article 1(23) of Regulation (EC)"""
     # query = """
-    #     This Decision will be applicable from this date of publication of the Commission Recommendation.
+    # Reporting requirement under Article 3 of the Euratom Treaty have been explain Commission Recommendation 2000-47455/Euratom.
     # """
-
-    query = """
-    Reporting requirement under Article 3 of the Euratom Treaty have been explain Commission Recommendation 2000-47455/Euratom.
-    """
     test(query,"F")
-# train("F")
 
 
 

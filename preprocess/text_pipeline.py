@@ -13,25 +13,23 @@ class TextPipeline:
         self.size = size # lg
         self.nlp = nlp
 
-    def generate_ngrams(self, s, n=5):
-        if len(s) < 5:
-            n = len(s)
+    def generate_ngrams(self, tokens, k=3):
+        # if len(s) < 5:
+        #     n = len(s)
 
-        s = " ".join(s)
-        # Convert to lowercases
-        s = s.lower()
 
         # Replace all none alphanumeric characters with spaces
         # s = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
+        tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
 
         # Break sentence in the token, remove empty tokens
-        tokens = [token for token in s.split(" ") if token != ""]
+        # tokens = [token for token in s.split(" ") if token != ""]
 
         # Use the zip function to help us generate n-grams
         # Concatentate the tokens into ngrams and return
-        ngrams = zip(*[tokens[i:] for i in range(n)])
-        return [" ".join(ngram) for ngram in ngrams]
-
+        # ngrams = zip(*[tokens[i:] for i in range(n)])
+        # return [" ".join(ngram) for ngram in ngrams]
+        return tokens
     def convert(self,text,divNgram=True):
         text = " ".join(text.split())
         doc = self.nlp(text)
@@ -51,6 +49,8 @@ class TextPipeline:
 
 
 if __name__ == '__main__':
+    nlp = spacy.load('en_core_web_sm')
+
     sample = """Well, Prince, so Genoa and Lucca are now just family estates of the Buonapartes. 
     1. It's my favourite pizza!
     2. Hello world!
@@ -61,6 +61,6 @@ if __name__ == '__main__':
     no longer my ‘faithful slave,’ as you call yourself! 
     But how do you do? I see I have frightened you—sit down and tell me all the news."""
     print("ORIGINAL: {}".format(sample))
-    pip = TextPipeline()
+    pip = TextPipeline(nlp)
     res = pip.convert(sample)
     print("\nEDITED: {}".format(res))

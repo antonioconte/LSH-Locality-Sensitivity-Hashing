@@ -52,6 +52,8 @@ def connect():
 	if LSH_m == None:
 		LSH_m = load_lsh("./model/model"+ "F")
 		msg = "LSH loaded!"
+	else:
+		msg = "LSH already loaded!"
 
 	response = app.response_class(
 		response=json.dumps({'data': msg}, indent=4),

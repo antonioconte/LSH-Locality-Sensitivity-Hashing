@@ -6,6 +6,7 @@ from datasketch import MinHash, MinHashLSHForest
 import pickle
 import time
 import config
+
 def save_lsh(obj, path="model"):
     with open(path, 'wb') as f:
         pickle.dump(obj, f)
@@ -45,7 +46,7 @@ def predict(text, perms, num_results, forest,normalizer):
 
     start_time = time.time()
     # senza divisione in ngrammi == False
-    tokens = normalizer.convert(text,False)
+    tokens = normalizer.convert(text,True)
     m = MinHash(num_perm=perms)
     for s in tokens:
         m.update(s.encode('utf8'))
