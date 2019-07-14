@@ -31,8 +31,9 @@ def index():
 @app.route('/query/', methods=['POST'])
 def query():
 	query = request.json['data']
+	metric = request.json['metric'] # jac / lev_sim / lev
 	query = utils.cleanhtml(query)
-	result = predict(query,permutations,num_recommendations,LSH_m,normalizer)
+	result = predict(query,permutations,num_recommendations,LSH_m,normalizer,METRIC=metric)
 	print("RESULT: ")
 	print(json.dumps(result, indent=4, sort_keys=True))
 	print("\n"*4)

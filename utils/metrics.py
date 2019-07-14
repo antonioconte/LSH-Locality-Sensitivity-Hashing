@@ -16,7 +16,7 @@ def metric(query, doc, normalizer, m=""):
         lev = textdistance.Levenshtein()
         # value = float(lev.distance(query_norm,text_norm))/float(len(query))
         value = lev.normalized_similarity(query_norm, text_norm)
-        value = round(value, 2)
+        value = "%.2f" % value
     else:
         value = 'NaN'
 

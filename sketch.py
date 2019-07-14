@@ -13,15 +13,9 @@ def train(type):
     # DATO IL PATH CONTENENTE I DOCUMENTI
     # SI SCEGLIE IL TIPO DI PARTE INTERESSATA
     # type := Sezione | Paragrafo | Frase | N-Gramma
-
-    print("Load Spacy...")
-    nlp = spacy.load('en_core_web_sm')
-    normalizer = TextPipeline(nlp)
-
     filepath = config.filepath
-    data = preprocessing.processing_data(filepath,nlp,type,normalizer)
-
-    print(json.dumps(data, indent=4, sort_keys=True))
+    data = preprocessing.processing_data(filepath,type)
+    # print(json.dumps(data, indent=4, sort_keys=True))
     # print(len(data))
     # exit(1)
     #-----------------------------------------------------------#

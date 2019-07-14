@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 
 
 permutations = 128

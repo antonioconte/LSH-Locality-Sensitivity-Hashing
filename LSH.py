@@ -39,10 +39,11 @@ def train(data, perms):
     return forest
 
 
-def predict(text, perms, num_results, forest,normalizer):
-    METRICS = config.METRICS
+def predict(text, perms, num_results, forest,normalizer,METRIC = ""):
+    if METRIC == "":
+        METRIC = config.METRICS
 
-    print("METRICA",METRICS)
+    print("METRICA",METRIC)
 
     start_time = time.time()
     # senza divisione in ngrammi == False
@@ -59,11 +60,11 @@ def predict(text, perms, num_results, forest,normalizer):
     if len(idx_array) == 0:
         res_json = []
     else:
-        result = [ metrics.metric(text,doc_retrival,normalizer, m=METRICS) for doc_retrival in idx_array]
-        if METRICS == "lev":
-            res_json = sorted(result, key = lambda i: i[METRICS])
+        result = [ metrics.metric(text,doc_retrival,normalizer, m=METRIC) for doc_retrival in idx_array]
+        if METRIC == "lev":
+            res_json = sorted(result, key = lambda i: i[METRIC])
         else:
-            res_json = sorted(result, key = lambda i: i[METRICS], reverse=True)
+            res_json = sorted(result, key = lambda i: i[METRIC], reverse=True)
 
     return {'query': text,'data': res_json, 'time': timing }
 

@@ -4,6 +4,9 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from preprocess import utils
 import config
+import spacy
+from preprocess.text_pipeline import TextPipeline
+
 
 # considero frasi con almeno 5 parole
 def extract_phrase(filename,soup,nlp,normalizer,min_count=5):
@@ -45,7 +48,10 @@ def process_doc(path, file, nlp,normalizer, type="F"):
         res = {}
     return res
 
-def processing_data(filepath, nlp, Type,normalizer):
+def processing_data(filepath,Type):
+    print("Load Spacy...")
+    nlp = spacy.load('en_core_web_sm')
+    normalizer = TextPipeline(nlp)
     # ~~~~~~ LOAD DATA ~~~~
     if not config.DEBUG:
         file_list = [f for f in listdir(filepath) if isfile(join(filepath, f))]
