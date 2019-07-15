@@ -13,16 +13,20 @@ def train(type):
     # DATO IL PATH CONTENENTE I DOCUMENTI
     # SI SCEGLIE IL TIPO DI PARTE INTERESSATA
     # type := Sezione | Paragrafo | Frase | N-Gramma
-    filepath = config.filepath
-    data = preprocessing.processing_data(filepath,type)
-    # print(json.dumps(data, indent=4, sort_keys=True))
-    # print(len(data))
-    # exit(1)
+    from preprocess.process_data import Processer
+    processer = Processer(
+        filepath = config.filepath,
+        part="Frase"
+    )
+    data = processer.run()
+    print(data)
+    print(json.dumps(data, indent=4, sort_keys=True))
+    print(len(data))
     #-----------------------------------------------------------#
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
-    LSH.save_lsh(lsh,"./model/model"+ type)
+    # LSH.save_lsh(lsh,"./model/model"+ type)
 
 
 # ~~~~~~~ TEST ~~~~~~~~
@@ -43,7 +47,8 @@ def test(query,type):
 if __name__ == '__main__':
     # train("F")
     #
-    query ="the Commission submitted the 24 June 2009 a request to the Authority for further advice on a number of elements in relation to the submitted application"
+    # exit(1)
+    query ="the Commission submitted the 1/07/19 a request to the Authority for further advice on a number of elements in relation to the submitted application"
     # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them, The health claim set out in the Annex to this Regulation shall not be included in the Community list of permitted claims as provided for in Article 13(3) of Regulation (EC) This Decision will be applicable from this date of publication of the Commission Recommendation."""
     # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee
     # on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them,

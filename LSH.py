@@ -1,5 +1,4 @@
 import numpy as np
-from preprocess import utils
 from utils import metrics
 from tqdm import tqdm
 from datasketch import MinHash, MinHashLSHForest

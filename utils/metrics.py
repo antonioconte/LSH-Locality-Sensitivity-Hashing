@@ -2,10 +2,11 @@ import textdistance
 
 def metric(query, doc, normalizer, m=""):
     (tag,text) = doc.split("]")
-    text_norm = " ".join(normalizer.convert(text, False))
-    query_norm = " ".join(normalizer.convert(query, False))
+    text_norm = normalizer.convert(text, False)
+    query_norm = normalizer.convert(query, False)
+    print("QUERY", query_norm)
+    print("RES", text_norm)
 
-    # rm num da query e da text
     if m == "jac":
         jac = textdistance.Jaccard()
         value = "%.2f" % jac(query_norm,text_norm)
