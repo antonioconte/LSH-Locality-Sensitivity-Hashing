@@ -31,14 +31,13 @@ def index():
 @app.route('/query/', methods=['POST'])
 def query():
 	query = request.json['data']
-	metric = request.json['metric'] # jac / lev_sim / lev
+	metric = request.json['metric'] # jac | lev_sim | lev
 	query = utils.cleanhtml(query)
 	result = predict(query,permutations,num_recommendations,LSH_m,normalizer,METRIC=metric)
 	print("RESULT: ")
 	print(json.dumps(result, indent=4, sort_keys=True))
 	print("\n"*4)
 
-	# result = { 'data': query }
 	response = app.response_class(
 		response=json.dumps(result, indent=4),
 		status=200,
@@ -49,7 +48,6 @@ def query():
 @app.route('/connect/', methods=['GET'])
 def connect():
 	global LSH_m
-	msg = "LSH already Loaded"
 	if LSH_m == None:
 		LSH_m = load_lsh("./model/model"+ "Frase")
 		msg = "LSH loaded!"
