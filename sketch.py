@@ -7,7 +7,7 @@ import config
 
 
 # ~~~~~ TRAIN ~~~~~~~~
-def train(type):
+def train(part):
     permutations = config.permutations
     # --------------------- FASE 1 -----------------------------#
     # DATO IL PATH CONTENENTE I DOCUMENTI
@@ -16,7 +16,7 @@ def train(type):
     from preprocess.process_data import Processer
     processer = Processer(
         filepath = config.filepath,
-        part="Frase"
+        part=part
     )
     data = processer.run()
     print(data)
@@ -26,7 +26,7 @@ def train(type):
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
-    # LSH.save_lsh(lsh,"./model/model"+ type)
+    LSH.save_lsh(lsh,"./model/model"+ part)
 
 
 # ~~~~~~~ TEST ~~~~~~~~
@@ -45,10 +45,10 @@ def test(query,type):
     print(timing)
 
 if __name__ == '__main__':
-    # train("F")
-    #
+    # train("Frase")
     # exit(1)
-    query ="the Commission submitted the 1/07/19 a request to the Authority for further advice on a number of elements in relation to the submitted application"
+    query ="the Commission submitted the 1/07/19 a request to the Authority for further advice on a "+\
+           "number of elements in relation to the submitted application"
     # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them, The health claim set out in the Annex to this Regulation shall not be included in the Community list of permitted claims as provided for in Article 13(3) of Regulation (EC) This Decision will be applicable from this date of publication of the Commission Recommendation."""
     # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee
     # on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them,
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # query = """
     # Reporting requirement under Article 3 of the Euratom Treaty have been explain Commission Recommendation 2000-47455/Euratom.
     # """
-    test(query,"F")
+    test(query,"Frase")
 
 
 

@@ -58,17 +58,23 @@ class TextPipeline:
         list_DPars = ['nsubj']
         for chunk in doc.noun_chunks:
             text_current = chunk.text
-            if chunk.root.dep_ in list_DPars:
-                text = re.sub(text_current, chunk.root.dep_, text)
+            try:
+                if chunk.root.dep_ in list_DPars:
+                    text = re.sub(text_current, chunk.root.dep_, text)
+            except:
+                print("SALTO_DPARS:",text_current)
+                pass
 
 
         # Detect Entity: https://spacy.io/api/annotation#named-entities
-        # list_Ent = ['DATE','GPE']
         list_Ent = ['GPE']
         for ent in doc.ents:
-            if ent.label_ in list_Ent:
-                text = re.sub(ent.text, ent.label_,text)
-
+            try:
+                if ent.label_ in list_Ent:
+                    text = re.sub(ent.text, ent.label_,text)
+            except:
+                print("SALTO_ENT:",ent.text)
+                pass
         doc = self.nlp(text)
         list_sost = list_DPars + list_Ent + special_pattern_list
 
