@@ -51,7 +51,7 @@ def connect():
 	global LSH_m
 	msg = "LSH already Loaded"
 	if LSH_m == None:
-		LSH_m = load_lsh("./model/model"+ "F")
+		LSH_m = load_lsh("./model/model"+ "Frase")
 		msg = "LSH loaded!"
 	else:
 		msg = "LSH already loaded!"
