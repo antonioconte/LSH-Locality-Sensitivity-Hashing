@@ -1,32 +1,31 @@
 import spacy
 
-# TEXT
-# TOKENIZATION
-# NORMALIZATION
-# WORD LIST
+# 0. TEXT
+# 1. remove_special_pattern
+# 2. Rilevo Soggetto (Dep Parsing)
+# 3. Detect Entity (GPE)
+# 4. TOKENIZATION:
+#     - marker 2,3 con < ... >
+#     - rm punteggiatura e stopword + lemmatization
+#     - marker <num>
+# 5. N-GRAM Gen
 
 import re
 import config
 
+
 class TextPipeline:
-    def __init__(self,nlp,size="sm"):
-        self.size = size # lg
+    def __init__(self,nlp):
         self.nlp = nlp
 
-    def generate_ngrams(self, tokens, k=3):
+    def generate_ngrams(self, tokens, k=3, word_based=True):
         # if len(s) < 5:
         #     n = len(s)
         # Replace all none alphanumeric characters with spaces
-        # s = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
-        tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
-
-        # Break sentence in the token, remove empty tokens
-        # tokens = [token for token in s.split(" ") if token != ""]
-
-        # Use the zip function to help us generate n-grams
-        # Concatentate the tokens into ngrams and return
-        # ngrams = zip(*[tokens[i:] for i in range(n)])
-        # return [" ".join(ngram) for ngram in ngrams]
+        if word_based:
+            tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
+        else:
+            print([tokens[i:i + k] for i in range(len(tokens) - k + 1)])
         return tokens
 
     def remove_special_pattern(self,text):
@@ -62,7 +61,7 @@ class TextPipeline:
                 if chunk.root.dep_ in list_DPars:
                     text = re.sub(text_current, chunk.root.dep_, text)
             except:
-                print("SALTO_DPARS:",text_current)
+                # print("SALTO_DPARS:",text_current)
                 pass
 
 
@@ -73,7 +72,7 @@ class TextPipeline:
                 if ent.label_ in list_Ent:
                     text = re.sub(ent.text, ent.label_,text)
             except:
-                print("SALTO_ENT:",ent.text)
+                # print("SALTO_ENT:",ent.text)
                 pass
         doc = self.nlp(text)
         list_sost = list_DPars + list_Ent + special_pattern_list
@@ -86,7 +85,7 @@ class TextPipeline:
                 # print("\t",token.text,token.lemma_,token.pos_,)
                 words.append(token.lemma_.lower())
             elif token.lemma_.isnumeric():
-                words.append("<NUM>")
+                words.append("<num>")
 
         if divNgram:
              return self.generate_ngrams(words)
@@ -108,5 +107,6 @@ if __name__ == '__main__':
     But how do you do? I see I have frightened you—sit down and tell me all the news."""
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
+    # res = pip.generate_ngrams(sample,k=11,word_based=False)
     res = pip.convert(sample)
     print("\nEDITED: {}".format(res))

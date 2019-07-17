@@ -4,8 +4,8 @@ def metric(query, doc, normalizer, m=""):
     (tag,text) = doc.split("]")
     text_norm = normalizer.convert(text, False)
     query_norm = normalizer.convert(query, False)
-    print("QUERY", query_norm)
-    print("RES", text_norm)
+    # print("QUERY", query_norm)
+    # print("RES", text_norm)
 
     if m == "jac":
         jac = textdistance.Jaccard()

@@ -1,10 +1,11 @@
 import numpy as np
 from utils import metrics
+import config
 from tqdm import tqdm
 from datasketch import MinHash, MinHashLSHForest
 import pickle
 import time
-import config
+
 
 def save_lsh(obj, path="model"):
     with open(path, 'wb') as f:

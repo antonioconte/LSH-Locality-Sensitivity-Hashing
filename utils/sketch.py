@@ -17,7 +17,8 @@ def train(part):
         filepath = config.filepath,
         part=part
     )
-    data = processer.run()
+    # Generazione del formato atteso da LSH.train
+    (data,num) = processer.run()
     print(data)
     print(json.dumps(data, indent=4, sort_keys=True))
     print(len(data))
@@ -25,6 +26,7 @@ def train(part):
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
+    # SAVING
     LSH.save_lsh(lsh,"./model/model"+ part)
 
 
@@ -44,8 +46,11 @@ def test(query,type):
     print(timing)
 
 if __name__ == '__main__':
-    # train("Frase")
-    # exit(1)
+    train("Paragrafo")
+    exit(1)
+
+
+
     query ="the Commission submitted the 1/07/19 a request to the Authority for further advice on a "+\
            "number of elements in relation to the submitted application"
     # query = """The measures provided for in this Regulation are in accordance with the opinion of the Standing Committee on the Food Chain and Animal Health and neither the European Parliament nor the Council have opposed them, The health claim set out in the Annex to this Regulation shall not be included in the Community list of permitted claims as provided for in Article 13(3) of Regulation (EC) This Decision will be applicable from this date of publication of the Commission Recommendation."""

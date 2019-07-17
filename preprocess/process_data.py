@@ -17,7 +17,6 @@ from os.path import isfile, join
 from bs4 import BeautifulSoup
 import spacy
 from tqdm import tqdm
-import re
 from preprocess.text_pipeline import TextPipeline
 
 class Processer():
@@ -29,12 +28,17 @@ class Processer():
         self.files = [f for f in listdir(self.filepath) if isfile(join(self.filepath, f))]
         print("Numero di documenti in",self.filepath," --->", len(self.files))
 
-    def proc_paragraph(self, doc):
-        par = doc.find_all("p")
-        par_list = []
+    def proc_paragraph(self,filename, doc):
+        pars = doc.find_all("p")
         res = []
-        for p in par:
-            txt = p.getText().strip()
+        for i,par in enumerate(pars):
+            string_par = par.getText().strip()
+            data_list_normalized = self.normalizer.convert(string_par)
+            if len(data_list_normalized) > 0:
+                res.append({
+                    'tag': '[' + filename + "#P" + str(i) + ']' + string_par,
+                    'data': data_list_normalized
+                })
             #process testo del paragrafo corrent
         return res
 
@@ -64,6 +68,8 @@ class Processer():
     def run(self):
         if self.part == 'Frase':
             fun =  self.proc_phrase
+        elif self.part == 'Paragrafo':
+            fun = self.proc_paragraph
 
         res = []
 
@@ -72,22 +78,22 @@ class Processer():
             soup = BeautifulSoup(html_txt, 'html.parser')
             _ = [title.extract() for title in soup('p', {'class': 'doc-ti'})]
             res += fun(doc,soup)
-        return res
+        return res,len(res)
 
 if __name__ == '__main__':
     # DEBUG
     filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
-    part = "Frase"
+    part = "Paragrafo"
 
     print("Processing docs...")
     processer = Processer(
         filepath = filepath,
         part = part
     )
-    a = processer.run()
+    (res,num) = processer.run()
     # for i,frase in enumerate(a[0]):
     #     print(i,frase)
     import json
 
-    print(json.dumps(a, indent=4, sort_keys=True))
-
+    print(json.dumps(res, indent=4, sort_keys=True))
+    print(f"Numero {part}: {num}")
