@@ -9,6 +9,7 @@ num_recommendations = 5
 METRICS = "lev"
 
 filepath = '/home/anto/Scrivania/Tesi/dataset_train/'
+# path_models = '/public/antonio_conteduca/model_LSH'
 path_models = "/home/anto/Scrivania/Tesi/LSH/model/model"
 
 date_pattern = "(\d{2}|\d{1})(\s{1}|-|/)"+\
