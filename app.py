@@ -12,7 +12,7 @@ app = Flask(__name__)
 permutations = config.permutations
 num_recommendations = config.num_recommendations
 
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_'+config.size_nlp)
 normalizer = TextPipeline(nlp)
 
 CORS(app)
@@ -65,13 +65,19 @@ def query():
 
 @app.route('/connect/', methods=['GET'])
 def connect():
-	msg = "All loaded!"
 	models = []
+	msg = "ok"
+	# load model phrase
 	global LSH_f
 	if LSH_f == None:
-		LSH_f = load_lsh("./model/model"+ "Frase")
-		msg = "LSH loaded!"
+		LSH_f = load_lsh(config.path_models + "_phrase")
 		models.append("Phrase")
+
+	if len(models) ==  4:
+		msg = "All loaded!"
+	elif len(models) > 0:
+		msg = "loaded"
+
 	response = app.response_class(
 		response=json.dumps({'data': msg, 'models': models}, indent=4),
 		status=200,

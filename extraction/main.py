@@ -7,9 +7,10 @@ from os.path import isfile, join
 from tqdm import tqdm
 import json
 import re
+# filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/test/'
 filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
 
-def extract_phrase(filepath):
+def extract_phrase(filepath,test=False):
     files = [f for f in listdir(filepath) if isfile(join(filepath, f))]
     total = 0
     phrase_dict = {'data': {} }
@@ -33,12 +34,16 @@ def extract_phrase(filepath):
 
         phrase_dict['data'][doc] = list_phrase
         total += len(list_phrase)
-    f = open("total_phrase.json",'w')
+    if test:
+        f = open("test_total_phrase.json",'w')
+    else:
+        f = open("total_phrase.json",'w')
+
     phrase_dict['total'] = total
     f.write(json.dumps(phrase_dict, indent=4, sort_keys=True))
     f.close()
 
-def extract_paragraph(filepath):
+def extract_paragraph(filepath,test=False):
     files = [f for f in listdir(filepath) if isfile(join(filepath, f))]
     total = 0
     par_dict =  {'data': {} }
@@ -63,12 +68,16 @@ def extract_paragraph(filepath):
 
     # print(total)
     par_dict['total'] = total
-    f = open("total_paragraph.json",'w')
+    if test:
+        f = open("test_total_phrase.json",'w')
+    else:
+        f = open("total_phrase.json",'w')
+
     f.write(json.dumps(par_dict, indent=4, sort_keys=True))
     f.close()
 
 
-def extract_section(filepath):
+def extract_section(filepath,test=False):
     files = [f for f in listdir(filepath) if isfile(join(filepath, f))]
     total = 0
     sec_dict =  {'data': {} }
@@ -84,7 +93,11 @@ def extract_section(filepath):
 
     # print(total)
     sec_dict['total'] = total
-    f = open("total_section.json",'w')
+    if test:
+        f = open("test_total_phrase.json",'w')
+    else:
+        f = open("total_phrase.json",'w')
+
     f.write(json.dumps(sec_dict, indent=4, sort_keys=True))
     f.close()
 

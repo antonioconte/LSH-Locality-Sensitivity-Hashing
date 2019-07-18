@@ -1,5 +1,5 @@
 DEBUG = False
-
+size_nlp = "sm"
 
 permutations = 128
 num_recommendations = 5
@@ -9,9 +9,7 @@ num_recommendations = 5
 METRICS = "lev"
 
 filepath = '/home/anto/Scrivania/Tesi/dataset_train/'
-
-
-
+path_models = "/home/anto/Scrivania/Tesi/LSH/model/model"
 
 date_pattern = "(\d{2}|\d{1})(\s{1}|-|/)"+\
 "((Jan(uary)?|(Feb(ruary)?|Ma(r(ch)?|y)|Apr|Jun(e)?|Jul(y)?|Aug(ust)|(Sept|Nov|Dec)(ember)?)|Oct(ober)?)|(\d{1}|\d{2}))"+\

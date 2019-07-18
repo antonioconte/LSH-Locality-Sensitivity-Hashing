@@ -12,7 +12,7 @@ def save_lsh(obj, path="model"):
         pickle.dump(obj, f)
     print("Saved: {}".format(path))
 
-def load_lsh(path="model"):
+def load_lsh(path):
     with (open(path, "rb")) as f:
         lsh = pickle.load(f)
     return lsh
