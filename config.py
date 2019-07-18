@@ -8,7 +8,7 @@ num_recommendations = 5
 # METRICS = "lev_sim"
 METRICS = "lev"
 
-filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
+filepath = '/home/anto/Scrivania/Tesi/dataset_train/'
 
 
 

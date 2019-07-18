@@ -4,96 +4,57 @@
         part    : Frase | Sezione | N-Gramma | Paragrafo
 
 
-    output: {
+    output: [{
         tag: [nomefile.html#Part-#numSeq] Text-not-Processed,
         data: [k-shingles di Text-Processed]
-    }
+    }]
 '''
 # html_txt = open(path + file, 'r', encoding='utf-8').read()
 # soup = BeautifulSoup(html_txt, 'html.parser')
 
-from os import listdir
-from os.path import isfile, join
-from bs4 import BeautifulSoup
 import spacy
 from tqdm import tqdm
 from preprocess.text_pipeline import TextPipeline
+import json
 
 class Processer():
     def __init__(self,filepath="",part=""):
+        self.filepath = filepath + "total_" + part + ".json"
         self.nlp = spacy.load('en_core_web_sm')
         self.normalizer = TextPipeline(self.nlp)
-        self.filepath = filepath
-        self.part = part
-        self.files = [f for f in listdir(self.filepath) if isfile(join(self.filepath, f))]
-        print("Numero di documenti in",self.filepath," --->", len(self.files))
+        if part == "paragraph" or part == "section":
+            self.tag = part[0].upper()
+        else:
+            self.tag = "F"
 
-    def proc_paragraph(self,filename, doc):
-        pars = doc.find_all("p")
-        res = []
-        for i,par in enumerate(pars):
-            string_par = par.getText().strip()
-            data_list_normalized = self.normalizer.convert(string_par)
-            if len(data_list_normalized) > 0:
-                res.append({
-                    'tag': '[' + filename + "#P" + str(i) + ']' + string_par,
-                    'data': data_list_normalized
-                })
-            #process testo del paragrafo corrent
-        return res
-
-    def proc_phrase(self,filename,doc):
-        par = doc.find_all("p")
-        phrase_list = []
-        for p in par:
-            txt = p.getText().strip()
-            if len(txt.split()) > 3:
-                for sent in self.nlp(txt).sents:
-                    phrase_list.append(sent)
-        res = []
-        for i,phrase in enumerate(phrase_list):
-            string_phrase = str(phrase)
-            data_list_normalized =  self.normalizer.convert(string_phrase)
-
-            if len(data_list_normalized)>0:
-                res.append({
-                   'tag': '[' + filename + '#F' + str(i) + ']' + string_phrase,
-                   'data': data_list_normalized
-                })
-        return res
-
-    # def run_parallel(self):
-
+        print(self.filepath)
+        with open(self.filepath) as json_file:
+            self.data = json.load(json_file)
+        print("TOTAL {}: {}".format(part,self.data['total']))
 
     def run(self):
-        if self.part == 'Frase':
-            fun =  self.proc_phrase
-        elif self.part == 'Paragrafo':
-            fun = self.proc_paragraph
+        result = []
+        # docList = list(self.data['data'].keys())[1:2]
+        docList = list(self.data['data'].keys())
+        for docname in tqdm(docList):
+            items_of_doc = self.data['data'][docname]
+            # print("doc {} ha {} {}".format(docname, len(items_of_doc),self.tag))
+            for (i,item) in enumerate(items_of_doc):
+                data_list_normalized = self.normalizer.convert(item)
+                if len(data_list_normalized) > 0:
+                    result += [
+                        {
+                            'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
+                            'data': data_list_normalized
 
-        res = []
-
-        for doc in tqdm(self.files,desc="Elaboring {}..".format(self.part)):
-            html_txt = open(self.filepath + doc, 'r', encoding='utf-8').read()
-            soup = BeautifulSoup(html_txt, 'html.parser')
-            _ = [title.extract() for title in soup('p', {'class': 'doc-ti'})]
-            res += fun(doc,soup)
-        return res,len(res)
+                        }
+                    ]
+        return result
 
 if __name__ == '__main__':
-    # DEBUG
-    filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
-    part = "Paragrafo"
+    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')
+    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'section')
+    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
+    print(json.dumps(p.run(), indent=4, sort_keys=True))
 
-    print("Processing docs...")
-    processer = Processer(
-        filepath = filepath,
-        part = part
-    )
-    (res,num) = processer.run()
-    # for i,frase in enumerate(a[0]):
-    #     print(i,frase)
-    import json
 
-    print(json.dumps(res, indent=4, sort_keys=True))
-    print(f"Numero {part}: {num}")

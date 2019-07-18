@@ -11,23 +11,21 @@ def train(part):
     # --------------------- FASE 1 -----------------------------#
     # DATO IL PATH CONTENENTE I DOCUMENTI
     # SI SCEGLIE IL TIPO DI PARTE INTERESSATA
-    # type := Sezione | Paragrafo | Frase | N-Gramma
+    # type := section | paragraph | phrase | triGramm
     from preprocess.process_data import Processer
     processer = Processer(
         filepath = config.filepath,
         part=part
     )
     # Generazione del formato atteso da LSH.train
-    (data,num) = processer.run()
-    print(data)
+    data = processer.run()
     print(json.dumps(data, indent=4, sort_keys=True))
-    print(len(data))
     #-----------------------------------------------------------#
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
     # SAVING
-    LSH.save_lsh(lsh,"./model/model"+ part)
+    LSH.save_lsh(lsh,"../model/model_"+ part)
 
 
 # ~~~~~~~ TEST ~~~~~~~~
@@ -37,7 +35,7 @@ def test(query,type):
 
     nlp = spacy.load('en_core_web_sm')
     normalizer = TextPipeline(nlp)
-    lsh = LSH.load_lsh("./model/model"+ type)
+    lsh = LSH.load_lsh("./model/model_"+ type)
     import time
     start_time = time.time()
     result = LSH.predict(query, permutations, num_recommendations, lsh,normalizer)
@@ -46,7 +44,11 @@ def test(query,type):
     print(timing)
 
 if __name__ == '__main__':
-    train("Paragrafo")
+    type = "paragraph"
+    # type = "phrase"
+    # type = "section"
+
+    train(type)
     exit(1)
 
 
@@ -61,7 +63,8 @@ if __name__ == '__main__':
     # query = """
     # Reporting requirement under Article 3 of the Euratom Treaty have been explain Commission Recommendation 2000-47455/Euratom.
     # """
-    test(query,"Frase")
+
+    test(query,type)
 
 
 

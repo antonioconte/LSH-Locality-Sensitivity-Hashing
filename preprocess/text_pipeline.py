@@ -48,7 +48,10 @@ class TextPipeline:
         return text,marker_list
 
     def convert(self,text,divNgram=True):
-        text = " ".join(text.split())
+        # print("> ", text)
+        if len(text) < 5:
+            return []
+        text = " ".join(text.split()) #rm spazi extra
         (text, special_pattern_list) = self.remove_special_pattern(text)
         doc = self.nlp(text)
         words = []
@@ -61,9 +64,7 @@ class TextPipeline:
                 if chunk.root.dep_ in list_DPars:
                     text = re.sub(text_current, chunk.root.dep_, text)
             except:
-                # print("SALTO_DPARS:",text_current)
                 pass
-
 
         # Detect Entity: https://spacy.io/api/annotation#named-entities
         list_Ent = ['GPE']
@@ -72,8 +73,8 @@ class TextPipeline:
                 if ent.label_ in list_Ent:
                     text = re.sub(ent.text, ent.label_,text)
             except:
-                # print("SALTO_ENT:",ent.text)
                 pass
+
         doc = self.nlp(text)
         list_sost = list_DPars + list_Ent + special_pattern_list
 

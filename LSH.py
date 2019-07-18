@@ -20,6 +20,7 @@ def load_lsh(path="model"):
 def train(data, perms):
     start_time = time.time()
     minhash = []
+
     for item in tqdm(data,desc="MinHash Docs.."):
         # tag = item['tag']
         tokens = item['data']
