@@ -6,7 +6,7 @@ import config
 
 
 # ~~~~~ TRAIN ~~~~~~~~
-def train(part):
+def train(PART):
     permutations = config.permutations
     # --------------------- FASE 1 -----------------------------#
     # DATO IL PATH CONTENENTE I DOCUMENTI
@@ -15,17 +15,16 @@ def train(part):
     from preprocess.process_data import Processer
     processer = Processer(
         filepath = config.filepath,
-        part=part
+        part=PART
     )
     # Generazione del formato atteso da LSH.train
     data = processer.run()
-    print(json.dumps(data, indent=4, sort_keys=True))
-    #-----------------------------------------------------------#
+    # print(json.dumps(data, indent=4, sort_keys=True))
 
     # --------------------- FASE 2 -----------------------------#
     lsh = LSH.train(data, permutations)
     # SAVING
-    LSH.save_lsh(lsh,"./model/model_"+ part)
+    LSH.save_lsh(lsh,"../model/model_"+ PART)
 
 
 # ~~~~~~~ TEST ~~~~~~~~
@@ -45,12 +44,10 @@ def test(query,type):
     print("Total Time: %.2f ms" % ((time.time() - start_time) * 1000))
 
 if __name__ == '__main__':
-    # type = "paragraph"
-    type = "phrase"
-    # type = "section"
-
-    # train(type)
-    # exit(1)
+    model_type_train = ["phrase","paragraph","section"]
+    for m in model_type_train:
+        train(m)
+    exit(1)
 
 
     query = """<p>The opportunities for establishing economic growth through innovation and a sustainable competitive energy policy have been recognised</p>"""

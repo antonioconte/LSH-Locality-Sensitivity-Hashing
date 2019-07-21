@@ -34,7 +34,7 @@ class Processer():
 
     def run(self):
         result = []
-        # docList = list(self.data['data'].keys())[1:2]
+        # docList = list(self.data['data'].keys())[1:5]
         docList = list(self.data['data'].keys())
         for docname in tqdm(docList):
             items_of_doc = self.data['data'][docname]

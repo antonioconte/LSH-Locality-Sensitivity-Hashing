@@ -79,7 +79,7 @@ def connect():
 		msg = "loaded"
 
 	response = app.response_class(
-		response=json.dumps({'data': msg, 'models': models}, indent=4),
+		response=json.dumps({'data': msg, 'models': models, 'path':config.path_models}, indent=4),
 		status=200,
 		mimetype='application/json'
 	)
