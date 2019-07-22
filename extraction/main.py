@@ -30,7 +30,7 @@ def extract_phrase(filepath,test=False):
         list_phrase_point = text_phrase.split(".")
         list_phrase = []
         for f in list_phrase_point:
-            list_phrase += [" ".join(f.split()) for f in re.sub(r":|;",'ENDFRASE',f).split("ENDFRASE") if len(f.strip()) > 5]
+            list_phrase += [" ".join(f.split()) for f in re.sub(r":|;",'ENDFRASE',f).split("ENDFRASE") if len(f.strip().split()) > 5]
 
         phrase_dict['data'][doc] = list_phrase
         total += len(list_phrase)
@@ -62,7 +62,7 @@ def extract_paragraph(filepath,test=False):
         text_par_clear = re.sub(r'Article [0-9]*', '', text_par_clear)
 
         # lista testi fino al punto
-        list_par = [" ".join(p.split()) for p in text_par_clear.split("ENDPAR") if len(p.strip()) > 0]
+        list_par = [" ".join(p.split()) for p in text_par_clear.split("ENDPAR") if len(p.strip().split()) > 5]
         par_dict['data'][doc] = list_par
         total += len(list_par)
         # print(json.dumps(par_dict, indent=4, sort_keys=True))
@@ -104,11 +104,11 @@ def extract_section(filepath,test=False):
 
 filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/test/'
 extract_phrase(filepath,True)
-# extract_paragraph(filepath,True)
-# extract_section(filepath,True)
+extract_paragraph(filepath,True)
+extract_section(filepath,True)
 
 
-# filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
-# extract_phrase(filepath)
-# extract_paragraph(filepath)
-# extract_section(filepath)
+filepath = '/home/anto/Scrivania/Tesi/dataset/dataset_splitted/train/'
+extract_phrase(filepath)
+extract_paragraph(filepath)
+extract_section(filepath)
