@@ -51,7 +51,7 @@ class TextPipeline:
         # print("> ", text)
         if len(text) < 5:
             return []
-        text = " ".join(text.split()) #rm spazi extra
+        text = " ".join(text.split())  #rm spazi extra
         (text, special_pattern_list) = self.remove_special_pattern(text)
         doc = self.nlp(text)
         words = []
@@ -109,5 +109,5 @@ if __name__ == '__main__':
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample)
+    res = pip.convert(sample,False)
     print("\nEDITED: {}".format(res))

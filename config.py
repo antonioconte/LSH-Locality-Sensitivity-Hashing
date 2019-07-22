@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 size_nlp = "sm"
 
 permutations = 128

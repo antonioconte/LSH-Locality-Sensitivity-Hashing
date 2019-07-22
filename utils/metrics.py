@@ -1,6 +1,13 @@
 import textdistance
 
 def metric(query, doc, normalizer, m=""):
+    '''
+    :param query: prima stringa di confronto
+    :param doc: seconda stringa di confronto
+    :param normalizer: oggetto per normalizzare testo (pipeline)
+    :param m: metrica da utilizzare
+    :return: { nomedocumento, testo con cui ha valore di similarità, similarità metrica }
+    '''
     (tag,text) = doc.split("]")
     text_norm = normalizer.convert(text, False)
     query_norm = normalizer.convert(query, False)

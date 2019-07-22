@@ -1,19 +1,15 @@
 from flask_cors import CORS
 from flask import Flask,request
-from LSH import load_lsh,predict
+from LSH import LSH
 from preprocess.text_pipeline import TextPipeline
 import config
 import spacy
 import json
 from preprocess import utils
 
-LSH_f = None
+LSH_f = LSH()
 app = Flask(__name__)
-permutations = config.permutations
-num_recommendations = config.num_recommendations
 
-nlp = spacy.load('en_core_web_'+config.size_nlp)
-normalizer = TextPipeline(nlp)
 
 CORS(app)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -40,21 +36,13 @@ def query():
 		LSH_m = None
 	elif type == "3-Gram":
 		LSH_m = None
-	metric = "lev"
+
 	# if(request.json['metric']):
 	# 	metric = request.json['metric'] # jac | lev_sim | lev
-	query = utils.cleanhtml(query)
-	result = predict(
-		query,
-		permutations,
-		num_recommendations,
-		LSH_m,
-		normalizer,
-		METRIC=metric
-	)
+	result = LSH_m.predict(query,metric="lev")
 	# print("RESULT: ")
 	# print(json.dumps(result, indent=4, sort_keys=True))
-	# print("\n"*4)
+	# print("\n"*2)
 
 	response = app.response_class(
 		response=json.dumps(result, indent=4),
@@ -69,8 +57,8 @@ def connect():
 	msg = "ok"
 	# load model phrase
 	global LSH_f
-	if LSH_f == None:
-		LSH_f = load_lsh(config.path_models + "_phrase")
+	if LSH_f.model == None:
+		LSH_f.load_lsh(config.path_models + "_phrase")
 		models.append("Phrase")
 
 	if len(models) ==  4:

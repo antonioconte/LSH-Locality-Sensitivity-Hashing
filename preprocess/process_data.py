@@ -16,6 +16,7 @@ import spacy
 from tqdm import tqdm
 from preprocess.text_pipeline import TextPipeline
 import json
+import config
 
 class Processer():
     def __init__(self,filepath="",part=""):
@@ -34,8 +35,10 @@ class Processer():
 
     def run(self):
         result = []
-        # docList = list(self.data['data'].keys())[1:5]
-        docList = list(self.data['data'].keys())
+        if config.DEBUG:
+            docList = list(self.data['data'].keys())[4:6]
+        else:
+            docList = list(self.data['data'].keys())
         for docname in tqdm(docList):
             items_of_doc = self.data['data'][docname]
             # print("doc {} ha {} {}".format(docname, len(items_of_doc),self.tag))
