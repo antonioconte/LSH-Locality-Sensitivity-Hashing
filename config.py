@@ -5,7 +5,7 @@ size_nlp = "sm"
 
 permutations = 128
 num_recommendations = 5
-default_threshold = 0.75
+default_threshold = 0.0 #all
 # METRICS = "jac"
 # METRICS = "lev_sim"
 METRICS = "lev"
