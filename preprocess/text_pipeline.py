@@ -54,7 +54,6 @@ class TextPipeline:
         text = " ".join(text.split())  #rm spazi extra
         (text, special_pattern_list) = self.remove_special_pattern(text)
         doc = self.nlp(text)
-        words = []
 
         # Dependency Parsing: https://spacy.io/api/annotation#dependency-parsing
         list_DPars = ['nsubj']
@@ -77,6 +76,8 @@ class TextPipeline:
 
         doc = self.nlp(text)
         list_sost = list_DPars + list_Ent + special_pattern_list
+
+        words = []
 
         #Part-of-speech tagging: https://spacy.io/usage/linguistic-features#pos-tagging
         for token in doc:
@@ -108,5 +109,5 @@ if __name__ == '__main__':
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample,True)
+    res = pip.convert(sample,False)
     print("\nEDITED: {}".format(res))

@@ -76,6 +76,7 @@ class LSH():
             N = self.num_results
 
         query = cleanhtml(query)
+        query_norm = self.normalizer.convert(query, False)
         start_time = time.time()
         # True per la fase di predict
         tokens = self.normalizer.convert(query, True)
@@ -90,9 +91,15 @@ class LSH():
         if len(idx_array) == 0:
             res_json = []
         else:
-            result = [metrics.metric(query, doc_retrival, self.normalizer, m='lev_sim') for doc_retrival in idx_array]
-            #res_json = [ res for res in sorted(result, key=lambda i: i['lev'], reverse=True) if float(res['lev']) >= threshold]
-            res_json = sorted(result, key=lambda i: i['lev'], reverse=True)
+            res_json = [
+                metrics.metric(query_norm, doc_retrival, self.normalizer, m='lev_sim')
+                for doc_retrival in idx_array
+            ]
+            res_json = [
+                res
+                for res in sorted(res_json, key=lambda i: i['lev'], reverse=True)
+                if float(res['lev']) >= threshold
+            ]
 
         timing = "%.2f ms" % ((time.time() - start_time) * 1000)
         print('It took {} ms to query forest.'.format(timing))
@@ -103,12 +110,15 @@ class LSH():
 if __name__ == '__main__':
     lsh = LSH()
     config.DEBUG = False
-    # lsh.load_lsh("./model/model_"+ "phrase")
-    # query = """<p>This Decision will be applicable from this date of publication of the Commission Recommendation</p>"""
-    # res = lsh.predict(query,threshold=0.51)
-
-    # print(json.dumps(res,ensure_ascii=False,indent=4))
-    # exit(1)
+    lsh.load_lsh("./model/model_"+ "phrase")
+    # query = "agricultural products intended for human consumption listed in annex ii to the treaty"
+    query ="""
+    the commission of the european communities, having regard to the treaty establishing the european community, having regard to regulation no 1907/2006 of the european parliament and of the council of 18 december 2006 concerning the registration, evaluation, authorisation and restriction of chemicals (reach), establishing a european chemicals agency, amending directive 1999/45/european commission and repealing council regulation no 793/93 and commission regulation no 1488/94 as well as council directive 76/769/european economic commision and commission directives 91/155/european economic commision, 93/67/european economic commision, 93/105/european commission and 2000/21/european commission, and in particular (1)(h) and thereof, whereas
+"""
+    res = lsh.predict(query,threshold=0.85)
+    #
+    print(json.dumps(res,ensure_ascii=False,indent=4))
+    exit(1)
 
     model_type_train = ["phrase", "paragraph", "section"]
 
