@@ -69,7 +69,7 @@ class LSH():
         print("Model SAVED ~ {}".format(file))
 
     def predict(self,query,threshold=0.75,N=0):
-        print("> QUERY:",query)
+        #print("> QUERY:",query)
         if self.model == None:
             raise Exception("Model is not loaded!")
         if N == 0:
@@ -79,7 +79,7 @@ class LSH():
         start_time = time.time()
         # True per la fase di predict
         tokens = self.normalizer.convert(query, True)
-        print("> TOKENS:",tokens)
+        #print("> TOKENS:",tokens)
 
         m = MinHash(num_perm=self.permutation)
         for s in tokens:
@@ -91,8 +91,8 @@ class LSH():
             res_json = []
         else:
             result = [metrics.metric(query, doc_retrival, self.normalizer, m='lev_sim') for doc_retrival in idx_array]
-            res_json = [ res for res in sorted(result, key=lambda i: i['lev'], reverse=True) if float(res['lev']) >= threshold]
-            # print(list(filter(lambda x: x['lev_sim'] > 0.8, res_json)))
+            #res_json = [ res for res in sorted(result, key=lambda i: i['lev'], reverse=True) if float(res['lev']) >= threshold]
+            res_json = sorted(result, key=lambda i: i['lev'], reverse=True)
 
         timing = "%.2f ms" % ((time.time() - start_time) * 1000)
         print('It took {} ms to query forest.'.format(timing))
@@ -103,12 +103,12 @@ class LSH():
 if __name__ == '__main__':
     lsh = LSH()
     config.DEBUG = False
-    lsh.load_lsh("./model/model_"+ "phrase")
-    query = """<p>This Decision will be applicable from this date of publication of the Commission Recommendation</p>"""
-    res = lsh.predict(query,threshold=0.51)
+    # lsh.load_lsh("./model/model_"+ "phrase")
+    # query = """<p>This Decision will be applicable from this date of publication of the Commission Recommendation</p>"""
+    # res = lsh.predict(query,threshold=0.51)
 
-    print(json.dumps(res,ensure_ascii=False,indent=4))
-    exit(1)
+    # print(json.dumps(res,ensure_ascii=False,indent=4))
+    # exit(1)
 
     model_type_train = ["phrase", "paragraph", "section"]
 
