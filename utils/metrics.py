@@ -28,5 +28,5 @@ def metric(query, doc, normalizer, m=""):
     else:
         value = 'NaN'
 
-    return {'docname': tag[1:].split("#")[0],'text': text, m: value}
+    return {'docname': tag[1:].split("#")[0],'text': text, 'lev': value}
     # return {'text': tag, m: value}

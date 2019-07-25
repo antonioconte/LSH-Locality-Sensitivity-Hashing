@@ -28,6 +28,16 @@ def index():
 def query():
 	query = request.json['data']
 	type = request.json['type']
+	try:
+		threshold = request.json['threshold']
+	except:
+		threshold = config.default_threshold
+
+	try:
+		maxResults = request.json['max']
+	except:
+		maxResults = config.num_recommendations
+
 	if type == "Phrase":
 		LSH_m = LSH_f
 	elif type == "Paragraph":
@@ -37,12 +47,7 @@ def query():
 	elif type == "3-Gram":
 		LSH_m = None
 
-	# if(request.json['metric']):
-	# 	metric = request.json['metric'] # jac | lev_sim | lev
-	result = LSH_m.predict(query,metric="lev")
-	# print("RESULT: ")
-	# print(json.dumps(result, indent=4, sort_keys=True))
-	# print("\n"*2)
+	result = LSH_m.predict(query,threshold=threshold,N=maxResults)
 
 	response = app.response_class(
 		response=json.dumps(result, indent=4),
@@ -54,11 +59,13 @@ def query():
 @app.route('/connect/', methods=['GET'])
 def connect():
 	models = []
-	msg = "ok"
+	msg = "NOT GOOD"
 	# load model phrase
 	global LSH_f
 	if LSH_f.model == None:
 		LSH_f.load_lsh(config.path_models + "_phrase")
+		models.append("Phrase")
+	else:
 		models.append("Phrase")
 
 	if len(models) ==  4:

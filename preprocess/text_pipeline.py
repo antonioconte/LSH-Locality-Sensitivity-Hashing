@@ -47,7 +47,7 @@ class TextPipeline:
                 marker_list.append(pattern[key])
         return text,marker_list
 
-    def convert(self,text,divNgram=True):
+    def convert(self,text,divNGram=True):
         # print("> ", text)
         if len(text) < 5:
             return []
@@ -62,7 +62,7 @@ class TextPipeline:
             text_current = chunk.text
             try:
                 if chunk.root.dep_ in list_DPars:
-                    text = re.sub(text_current, chunk.root.dep_, text)
+                    text = re.sub(r'\b{}\b'.format(text_current), chunk.root.dep_, text)
             except:
                 pass
 
@@ -83,12 +83,11 @@ class TextPipeline:
             if token.text in list_sost:
                 words.append("<"+token.text+">")
             elif not token.is_stop and token.is_alpha: #is_alpha per rimuove anche la punteggiatura
-                # print("\t",token.text,token.lemma_,token.pos_,)
                 words.append(token.lemma_.lower())
             elif token.lemma_.isnumeric():
                 words.append("<num>")
 
-        if divNgram:
+        if divNGram:
              return self.generate_ngrams(words)
         else:
             return " ".join(words)
@@ -97,7 +96,7 @@ class TextPipeline:
 
 if __name__ == '__main__':
     nlp = spacy.load('en_core_web_sm')
-    sample = """Well, Prince, so Genoa and Lucca are now just family estates of the Buonapartes. 
+    sample = """Well, prince, so genoa and Lucca are now just family estates of the Buonapartes. 
     1. It's my favourite pizza!
     2. Hello world!
     But I warn you, if you don’t tell me that this means war, 
@@ -105,9 +104,9 @@ if __name__ == '__main__':
     by that Antichrist—I really believe he is Antichrist—I will have nothing more 
     to do with you and you are no longer my friend, 
     no longer my ‘faithful slave,’ as you call yourself! 
-    But how do you do? I see I have frightened you—sit down and tell me all the news."""
+    But how do you do? I see I have frightened you—sit down and tell the news."""
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample,False)
+    res = pip.convert(sample,True)
     print("\nEDITED: {}".format(res))

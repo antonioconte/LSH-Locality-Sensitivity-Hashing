@@ -68,45 +68,47 @@ class LSH():
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
 
-    def predict(self,query,metric,N=0):
+    def predict(self,query,threshold=0.75,N=0):
+        print("> QUERY:",query)
         if self.model == None:
             raise Exception("Model is not loaded!")
         if N == 0:
             N = self.num_results
+
         query = cleanhtml(query)
         start_time = time.time()
-        # senza divisione in ngrammi == False
+        # True per la fase di predict
         tokens = self.normalizer.convert(query, True)
+        print("> TOKENS:",tokens)
+
         m = MinHash(num_perm=self.permutation)
         for s in tokens:
             m.update(s.encode('utf8'))
 
-        idx_array = np.array(self.model.query(m, self.num_results))
-
-        timing = "%.2f ms" % ((time.time() - start_time) * 1000)
-        print('It took {} ms to query forest.'.format(timing))
+        idx_array = np.array(self.model.query(m, N))
 
         if len(idx_array) == 0:
             res_json = []
         else:
-            result = [metrics.metric(query, doc_retrival, self.normalizer, m=metric) for doc_retrival in idx_array]
-            if metric == "lev":
-                res_json = sorted(result, key=lambda i: i[metric])
-            else:
-                res_json = sorted(result, key=lambda i: i[metric], reverse=True)
+            result = [metrics.metric(query, doc_retrival, self.normalizer, m='lev_sim') for doc_retrival in idx_array]
+            res_json = [ res for res in sorted(result, key=lambda i: i['lev'], reverse=True) if float(res['lev']) >= threshold]
+            # print(list(filter(lambda x: x['lev_sim'] > 0.8, res_json)))
 
-        return {'query': query, 'data': res_json, 'time': timing}
+        timing = "%.2f ms" % ((time.time() - start_time) * 1000)
+        print('It took {} ms to query forest.'.format(timing))
+
+        return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'threshold':threshold}
 
 
 if __name__ == '__main__':
     lsh = LSH()
     config.DEBUG = False
-    # lsh.load_lsh("./model/model_"+ "phrase")
-    # query = """<p>The opportunities for establishing economic growth through innovation and a sustainable competitive energy policy have been recognised</p>"""
-    # res = lsh.predict(query,"lev")
-    #
-    # print(json.dumps(res,ensure_ascii=False,indent=4))
-    # exit(1)
+    lsh.load_lsh("./model/model_"+ "phrase")
+    query = """<p>This Decision will be applicable from this date of publication of the Commission Recommendation</p>"""
+    res = lsh.predict(query,threshold=0.51)
+
+    print(json.dumps(res,ensure_ascii=False,indent=4))
+    exit(1)
 
     model_type_train = ["phrase", "paragraph", "section"]
 
