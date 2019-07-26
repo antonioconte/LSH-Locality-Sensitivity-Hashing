@@ -43,7 +43,7 @@ class Processer():
             items_of_doc = self.data['data'][docname]
             # print("doc {} ha {} {}".format(docname, len(items_of_doc),self.tag))
             for (i,item) in enumerate(items_of_doc):
-                data_list_normalized = self.normalizer.convert(item)
+                data_list_normalized = self.normalizer.convert(item,wordBased=config.wordBased)
                 if len(data_list_normalized) > 0:
                     result += [
                         {

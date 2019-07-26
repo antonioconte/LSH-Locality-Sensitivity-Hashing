@@ -17,6 +17,7 @@ class LSH():
         self.permutation = perm
         self.num_results = num_res
         self.model = None
+
     def setPerm(self,p):
         self.permutation = p
 
@@ -56,12 +57,14 @@ class LSH():
 
     def train(self,dataset_path,part,model_path = config.path_models):
         from preprocess.process_data import Processer
+        print("WORD BASED: ",config.wordBased)
         processer = Processer(
             filepath=dataset_path,
             part=part
         )
         # Generazione del formato atteso da LSH.train
         data = processer.run()
+        print(json.dumps(data[0]['data'],indent=4))
         # print(json.dumps(data, indent=4, sort_keys=True))
         lsh = self.__train(data)
         file = model_path +"_" + part
@@ -79,7 +82,7 @@ class LSH():
         query_norm = self.normalizer.convert(query, False)
         start_time = time.time()
         # True per la fase di predict
-        tokens = self.normalizer.convert(query, True)
+        tokens = self.normalizer.convert(query, divNGram=True,wordBased=config.wordBased)
         #print("> TOKENS:",tokens)
 
         m = MinHash(num_perm=self.permutation)
@@ -109,18 +112,17 @@ class LSH():
 
 if __name__ == '__main__':
     lsh = LSH()
-    config.DEBUG = False
-    lsh.load_lsh("./model/model_"+ "phrase")
+    # lsh.load_lsh("./model/model_"+ "phrase")
     # query = "agricultural products intended for human consumption listed in annex ii to the treaty"
-    query ="""
-    the commission of the european communities, having regard to the treaty establishing the european community, having regard to regulation no 1907/2006 of the european parliament and of the council of 18 december 2006 concerning the registration, evaluation, authorisation and restriction of chemicals (reach), establishing a european chemicals agency, amending directive 1999/45/european commission and repealing council regulation no 793/93 and commission regulation no 1488/94 as well as council directive 76/769/european economic commision and commission directives 91/155/european economic commision, 93/67/european economic commision, 93/105/european commission and 2000/21/european commission, and in particular (1)(h) and thereof, whereas
-"""
-    res = lsh.predict(query)
+    # query ="""
+    # the commission of the european communities, having regard to the treaty establishing the european community, having regard to regulation no 1907/2006 of the european parliament and of the council of 18 december 2006 concerning the registration, evaluation, authorisation and restriction of chemicals (reach), establishing a european chemicals agency, amending directive 1999/45/european commission and repealing council regulation no 793/93 and commission regulation no 1488/94 as well as council directive 76/769/european economic commision and commission directives 91/155/european economic commision, 93/67/european economic commision, 93/105/european commission and 2000/21/european commission, and in particular (1)(h) and thereof, whereas
+    # """
+    # res = lsh.predict(query)
     #
-    print(json.dumps(res,ensure_ascii=False,indent=4))
-    exit(1)
+    # print(json.dumps(res,ensure_ascii=False,indent=4))
+    # exit(1)
 
-    model_type_train = ["phrase", "paragraph", "section"]
+    model_type_train = ["phrase"]
 
     for m in model_type_train:
         lsh.train(config.filepath, m)

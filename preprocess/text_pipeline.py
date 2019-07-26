@@ -22,10 +22,14 @@ class TextPipeline:
         # if len(s) < 5:
         #     n = len(s)
         # Replace all none alphanumeric characters with spaces
+
         if word_based:
             tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         else:
-            print([tokens[i:i + k] for i in range(len(tokens) - k + 1)])
+            tokens = " ".join(tokens)
+            k = 10
+            tokens = [tokens[i:i + k] for i in range(len(tokens) - k + 1)]
+
         return tokens
 
     def remove_special_pattern(self,text):
@@ -47,7 +51,7 @@ class TextPipeline:
                 marker_list.append(pattern[key])
         return text,marker_list
 
-    def convert(self,text,divNGram=True):
+    def convert(self,text,divNGram=True,wordBased=True):
         # print("> ", text)
         if len(text) < 5:
             return []
@@ -89,13 +93,14 @@ class TextPipeline:
                 words.append("<num>")
 
         if divNGram:
-             return self.generate_ngrams(words)
+             return self.generate_ngrams(words,word_based=wordBased)
         else:
             return " ".join(words)
 
 
 
 if __name__ == '__main__':
+
     nlp = spacy.load('en_core_web_sm')
     sample = """Well, prince, so genoa and Lucca are now just family estates of the Buonapartes. 
     1. It's my favourite pizza!
@@ -109,5 +114,5 @@ if __name__ == '__main__':
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample,False)
+    res = pip.convert(sample,divNGram=False,wordBased=False)
     print("\nEDITED: {}".format(res))

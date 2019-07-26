@@ -6,7 +6,7 @@ def sim_lev(str1, str2):
     lev = Levenshtein.distance(str1, str2)
     return ( 1.0 - (lev/max(len(str1),len(str2))))
 
-def metric(query_norm, doc, normalizer, m=""):
+def metric(query_norm, doc, normalizer):
     '''
     :param query: prima stringa di confronto
     :param doc: seconda stringa di confronto
