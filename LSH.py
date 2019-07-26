@@ -11,11 +11,10 @@ import time
 from preprocess.text_pipeline import TextPipeline
 
 class LSH():
-    def __init__(self,perm = config.permutations, num_res = config.num_recommendations):
+    def __init__(self,perm = config.permutations):
         nlp = spacy.load('en_core_web_sm')
         self.normalizer = TextPipeline(nlp)
         self.permutation = perm
-        self.num_results = num_res
         self.model = None
 
     def setPerm(self,p):
@@ -55,7 +54,7 @@ class LSH():
         return forest
 
 
-    def train(self,dataset_path,part,model_path = config.path_models):
+    def train(self,dataset_path,part):
         from preprocess.process_data import Processer
         print("WORD BASED: ",config.wordBased)
         processer = Processer(
@@ -67,23 +66,20 @@ class LSH():
         print(json.dumps(data[0]['data'],indent=4))
         # print(json.dumps(data, indent=4, sort_keys=True))
         lsh = self.__train(data)
-        file = model_path +"_" + part
+        file = config.path_models +"_" + part
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
 
-    def predict(self,query,threshold=config.default_threshold,N=0):
-        #print("> QUERY:",query)
+    def predict(self,query,threshold=config.default_threshold,N=config.num_recommendations):
         if self.model == None:
             raise Exception("Model is not loaded!")
-        if N == 0:
-            N = self.num_results
 
         query = cleanhtml(query)
         query_norm = self.normalizer.convert(query, False)
         start_time = time.time()
+
         # True per la fase di predict
         tokens = self.normalizer.convert(query, divNGram=True,wordBased=config.wordBased)
-        #print("> TOKENS:",tokens)
 
         m = MinHash(num_perm=self.permutation)
         for s in tokens:
@@ -95,7 +91,7 @@ class LSH():
             res_json = []
         else:
             res_json = [
-                metrics.metric(query_norm, doc_retrival, self.normalizer, m='lev_sim')
+                metrics.metric(query_norm, doc_retrival, self.normalizer)
                 for doc_retrival in idx_array
             ]
             res_json = [

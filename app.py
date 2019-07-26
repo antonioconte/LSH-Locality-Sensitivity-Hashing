@@ -8,6 +8,10 @@ import json
 from preprocess import utils
 
 LSH_f = LSH()
+LSH_p = LSH()
+LSH_s = LSH()
+# LSH_t = LSH()
+
 app = Flask(__name__)
 
 
@@ -68,13 +72,33 @@ def connect():
 	else:
 		models.append("Phrase")
 
+	global LSH_p
+	if LSH_p.model == None:
+		LSH_p.load_lsh(config.path_models + "_paragraph")
+		models.append("Paragraph")
+	else:
+		models.append("Paragraph")
+
+	global LSH_s
+	if LSH_s.model == None:
+		LSH_s.load_lsh(config.path_models + "_section")
+		models.append("Section")
+	else:
+		models.append("Section")
+
 	if len(models) ==  4:
 		msg = "All loaded!"
 	elif len(models) > 0:
 		msg = "loaded"
 
 	response = app.response_class(
-		response=json.dumps({'data': msg, 'models': models, 'path':config.path_models}, indent=4),
+		response=json.dumps({
+			'data': msg,
+			'models': models,
+			'path':config.path_models,
+			'wordbased': config.wordBased,
+			'ip': config.ip
+		}, indent=4, sort_keys=True),
 		status=200,
 		mimetype='application/json'
 	)
