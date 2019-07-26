@@ -45,10 +45,10 @@ def query():
 	if type == "Phrase":
 		LSH_m = LSH_f
 	elif type == "Paragraph":
-		LSH_m = None
+		LSH_m = LSH_p
 	elif type == "Section":
-		LSH_m = None
-	elif type == "3-Gram":
+		LSH_m = LSH_s
+	elif type == "TriGram":
 		LSH_m = None
 
 	result = LSH_m.predict(query,threshold=threshold,N=maxResults)
