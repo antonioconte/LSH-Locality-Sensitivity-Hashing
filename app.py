@@ -30,8 +30,16 @@ def index():
 
 @app.route('/query/', methods=['POST'])
 def query():
-	query = request.json['data']
-	type = request.json['type']
+	try:
+		query = request.json['data']
+		type = request.json['type']
+	except:
+		return app.response_class(
+			response=json.dumps({'error':'query or type is empty'}, indent=4),
+			status=505,
+			mimetype='application/json'
+		)
+
 	try:
 		threshold = request.json['threshold']
 	except:
@@ -41,7 +49,7 @@ def query():
 		maxResults = request.json['max']
 	except:
 		maxResults = config.num_recommendations
-
+	LSH_m = None
 	if type == "Phrase":
 		LSH_m = LSH_f
 	elif type == "Paragraph":
@@ -50,6 +58,13 @@ def query():
 		LSH_m = LSH_s
 	elif type == "TriGram":
 		LSH_m = None
+
+	if LSH_m == None:
+		return app.response_class(
+			response=json.dumps({'error': 'type is not validd'}, indent=4),
+			status=505,
+			mimetype='application/json'
+		)
 
 	result = LSH_m.predict(query,threshold=threshold,N=maxResults)
 
