@@ -39,7 +39,7 @@ ip = socket.gethostbyname(socket.gethostname())
 
 wordBased = True
 
-if ('130.136.4.222' in ip or '130.136.4.145' in ip) :
+if '130.136.4' in ip:
     if wordBased:
         path_models = '/public/antonio_conteduca/model_LSH/model'
     else:
