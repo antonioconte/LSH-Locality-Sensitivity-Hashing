@@ -1,5 +1,12 @@
 import socket
 
+threshold_default = {
+    'Section': 0.3,
+    'Phrase': 0.80,
+    'Paragraph': 0.50,
+    "TriGram": 0.90
+}
+
 DEBUG = True
 size_nlp = "sm"
 

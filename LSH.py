@@ -87,6 +87,8 @@ class LSH():
 
         idx_array = np.array(self.model.query(m, N))
 
+        timing_search = "%.2f ms" % ((time.time() - start_time) * 1000)
+
         if len(idx_array) == 0:
             res_json = []
         else:
@@ -103,7 +105,7 @@ class LSH():
         timing = "%.2f ms" % ((time.time() - start_time) * 1000)
         print('It took {} ms to query forest.'.format(timing))
 
-        return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'threshold':threshold}
+        return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
 
 
 if __name__ == '__main__':

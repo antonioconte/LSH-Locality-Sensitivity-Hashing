@@ -13,7 +13,7 @@ def metric(query_norm, doc, normalizer):
     :param normalizer: oggetto per normalizzare testo (pipeline)
     :return: { nomedocumento, testo con cui ha valore di similarità, similarità metrica }
     '''
-    (tag,text) = doc.split("]")
+    (tag,text) = doc.split("]",1)
     text_norm = normalizer.convert(text, False)
     # print("QUERY", query_norm)
     # print("RES", text_norm)
