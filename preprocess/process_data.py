@@ -21,9 +21,12 @@ import config
 class Processer():
     def __init__(self,filepath="",part=""):
         self.filepath = filepath + "total_" + part + ".json"
-        self.nlp = spacy.load('en_core_web_sm')
+        self.nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.normalizer = TextPipeline(self.nlp)
-        if part == "paragraph" or part == "section":
+        if part == "paragraph" or part == "section" or part == "trigram":
+            if part == "trigram":
+                # uso le frasi per l'estazione dei trigrammi
+                self.filepath = filepath + "total_phrase.json"
             self.tag = part[0].upper()
         else:
             self.tag = "F"
@@ -31,33 +34,53 @@ class Processer():
         print(self.filepath)
         with open(self.filepath) as json_file:
             self.data = json.load(json_file)
-        print("TOTAL {}: {}".format(part,self.data['total']))
+
+        if self.tag == "T":
+            print("TOTAL {}: {} (NUMERO DI FRASI)".format(part, self.data['total']))
+        else:
+            print("TOTAL {}: {}".format(part,self.data['total']))
 
     def run(self):
         result = []
         if config.DEBUG:
             docList = list(self.data['data'].keys())[4:6]
         else:
-            docList = list(self.data['data'].keys())
+            docList = list(self.data['data'].keys())[:1000]
+
         for docname in tqdm(docList):
             items_of_doc = self.data['data'][docname]
             # print("doc {} ha {} {}".format(docname, len(items_of_doc),self.tag))
             for (i,item) in enumerate(items_of_doc):
                 data_list_normalized = self.normalizer.convert(item,wordBased=config.wordBased)
                 if len(data_list_normalized) > 0:
-                    result += [
-                        {
-                            'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
-                            'data': data_list_normalized
+                    if self.tag == 'T':
+                        import uuid
+                        result += [
+                            {
+                                'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + item,
+                                'data': item
 
-                        }
-                    ]
+                            }
+                            for i,item in enumerate(data_list_normalized)
+                        ]
+
+                        # per ogni trigramma in data_list_normalized
+                    else:
+                        result += [
+                            {
+                                'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
+                                'data': data_list_normalized
+
+                            }
+                        ]
+        # print(json.dumps(result,indent=4))
         return result
 
 if __name__ == '__main__':
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'section')
-    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
+    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
+    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'trigram')
     print(json.dumps(p.run(), indent=4, sort_keys=True))
 
 

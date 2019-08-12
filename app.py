@@ -10,7 +10,7 @@ from preprocess import utils
 LSH_f = LSH()
 LSH_p = LSH()
 LSH_s = LSH()
-# LSH_t = LSH()
+LSH_t = LSH()
 
 app = Flask(__name__)
 
@@ -57,7 +57,7 @@ def query():
 	elif type == "Section":
 		LSH_m = LSH_s
 	elif type == "TriGram":
-		LSH_m = None
+		LSH_m = LSH_t
 
 	if LSH_m == None:
 		return app.response_class(
@@ -100,6 +100,13 @@ def connect():
 		models.append("Section")
 	else:
 		models.append("Section")
+
+	global LSH_t
+	if LSH_t.model == None:
+		LSH_t.load_lsh(config.path_models + "_trigram")
+		models.append("TriGram")
+	else:
+		models.append("TriGram")
 
 	if len(models) ==  4:
 		msg = "All loaded!"

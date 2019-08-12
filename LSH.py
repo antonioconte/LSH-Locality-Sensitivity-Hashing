@@ -12,7 +12,7 @@ from preprocess.text_pipeline import TextPipeline
 
 class LSH():
     def __init__(self,perm = config.permutations):
-        nlp = spacy.load('en_core_web_sm')
+        nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.normalizer = TextPipeline(nlp)
         self.permutation = perm
         self.model = None
@@ -63,7 +63,7 @@ class LSH():
         )
         # Generazione del formato atteso da LSH.train
         data = processer.run()
-        print(json.dumps(data[0]['data'],indent=4))
+        # print(json.dumps(data[0]['data'],indent=4))
         # print(json.dumps(data, indent=4, sort_keys=True))
         lsh = self.__train(data)
         file = config.path_models +"_" + part
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # print(json.dumps(res,ensure_ascii=False,indent=4))
     # exit(1)
 
-    model_type_train = ["phrase"]
+    model_type_train = ["trigram"]
 
     for m in model_type_train:
         lsh.train(config.filepath, m)

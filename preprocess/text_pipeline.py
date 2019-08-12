@@ -101,7 +101,7 @@ class TextPipeline:
 
 if __name__ == '__main__':
 
-    nlp = spacy.load('en_core_web_sm')
+    nlp = spacy.load('en_core_web_'+config.size_nlp)
     sample = """Well, prince, so genoa and Lucca are now just family estates of the Buonapartes. 
     1. It's my favourite pizza!
     2. Hello world!
@@ -114,5 +114,5 @@ if __name__ == '__main__':
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample,divNGram=False,wordBased=False)
+    res = pip.convert(sample)
     print("\nEDITED: {}".format(res))
