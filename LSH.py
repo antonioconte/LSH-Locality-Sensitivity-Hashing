@@ -119,9 +119,12 @@ if __name__ == '__main__':
     #
     # print(json.dumps(res,ensure_ascii=False,indent=4))
     # exit(1)
+    # model_type_train = ["paragraph"]
+    # model_type_train = ["phrase"]
+    # model_type_train = ["section"]
+    # model_type_train = ["trigram"]
 
-    model_type_train = ["trigram"]
-
+    model_type_train = ["paragraph", "section","phrase","trigram"]
     for m in model_type_train:
         lsh.train(config.filepath, m)
     exit(1)
