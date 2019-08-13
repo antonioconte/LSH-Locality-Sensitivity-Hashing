@@ -51,33 +51,26 @@ class Processer():
             items_of_doc = self.data['data'][docname]
             # print("doc {} ha {} {}".format(docname, len(items_of_doc),self.tag))
             for (i,item) in enumerate(items_of_doc):
-                print(item)
-                data_list_normalized = self.normalizer.convert(item,wordBased=config.wordBased)
-                if len(data_list_normalized) > 0:
                     if self.tag == 'T':
+                        data_list_normalized = self.normalizer.convert_trigram(item)
                         import uuid
-                        result += [{
-                                'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + item,
-                                'data': [item]
-                            }
-                            for i,item in enumerate(data_list_normalized)
-                        ]
-                        # result += [
-                        #     {
-                        #         'tag': '[' + docname + '#' + self.tag + "_" + str(uuid.uuid4()) + ']' + item,
-                        #         'data': data_list_normalized
-                        #
-                        #     }
-                        # ]
-                        # per ogni trigramma in data_list_normalized
-                    else:
-                        result += [
-                            {
-                                'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
-                                'data': data_list_normalized
+                        for key in data_list_normalized.keys():
+                            result += [{
+                                    'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + key,
+                                    'data': data_list_normalized[key]
+                                }
+                            ]
 
-                            }
-                        ]
+                    else:
+                        data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
+                        if len(data_list_normalized) > 0:
+                            result += [
+                                {
+                                    'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
+                                    'data': data_list_normalized
+
+                                }
+                            ]
         return result
 
 if __name__ == '__main__':
