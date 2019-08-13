@@ -27,7 +27,7 @@ class TextPipeline:
             tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         else:
             tokens = " ".join(tokens)
-            k = 10
+            k = 15
             tokens = [tokens[i:i + k] for i in range(len(tokens) - k + 1)]
 
         return tokens
@@ -36,6 +36,7 @@ class TextPipeline:
         pattern = {
             config.date_pattern: "DATE",
             "\(\d+\)+": '',         #(NUM)
+            "\d+\.": '',
             "\d+/\d+": 'NUMSLASH',  #NUM/NUM
             "\d+\.\d+": 'NUM'       #NUM.NUM
         }
@@ -50,6 +51,54 @@ class TextPipeline:
             if pattern[key] != "":
                 marker_list.append(pattern[key])
         return text,marker_list
+
+    # restituisce lista con txt del trigramma e la relativa normalizzazione
+
+    def convert_trigram(self,text):
+        if len(text) < 5:
+            return []
+        text = text.lower()
+        (text, special_pattern_list) = self.remove_special_pattern(text)
+        text = " ".join(text.split())  # rm spazi extra
+        doc = self.nlp(text)
+        list_subs = ['DATE','NUMSLASH','NUM']
+        trigrams = {}
+        for i in range(len(doc) - 1):
+            current_trigram = ""
+            k = 0
+            pos_current = i
+            while k < 3:
+                if not doc[pos_current].is_stop and doc[pos_current].is_alpha:
+                    current_trigram += " " + str(doc[pos_current])
+                    k += 1
+                else:
+                    if k == 0:
+                        break
+                    else:
+                        if doc[pos_current].is_punct:
+                            current_trigram += str(doc[pos_current])
+                        else:
+                            current_trigram += " " + str(doc[pos_current])
+                pos_current += 1
+                if pos_current > len(doc) - 1:
+                    break
+            trig = current_trigram.strip()
+            if len(trig) > 0 and len(trig.split()) > 2:
+                t = " ".join(current_trigram.split())
+                doc_x = self.nlp(t)
+                words = []
+                for token in doc_x:
+                    if token.text in list_subs:
+                        words.append("<" + token.text + ">")
+                    elif not token.is_stop and token.is_alpha:  # is_alpha per rimuove anche la punteggiatura
+                        words.append(token.lemma_.lower())
+                    elif token.lemma_.isnumeric():
+                        words.append("<num>")
+                trigrams[t] = self.generate_ngrams(words,word_based=False)
+                if pos_current == len(doc) - 1:
+                    break
+        return trigrams
+
 
     def convert(self,text,divNGram=True,wordBased=True):
         # print("> ", text)
@@ -83,6 +132,7 @@ class TextPipeline:
 
         words = []
 
+
         #Part-of-speech tagging: https://spacy.io/usage/linguistic-features#pos-tagging
         for token in doc:
             if token.text in list_sost:
@@ -103,7 +153,7 @@ if __name__ == '__main__':
 
     nlp = spacy.load('en_core_web_'+config.size_nlp)
     sample = """Well, prince, so genoa and Lucca are now just family estates of the Buonapartes. 
-    1. It's my favourite pizza!
+    1. 30/12/1994 It's my favourite pizza!
     2. Hello world!
     But I warn you, if you don’t tell me that this means war, 
     if you still try to defend the infamies and horrors perpetrated 
@@ -114,5 +164,9 @@ if __name__ == '__main__':
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.generate_ngrams(sample,k=11,word_based=False)
-    res = pip.convert(sample)
-    print("\nEDITED: {}".format(res))
+    res = pip.convert_trigram(sample)
+    # print(res[-1])
+    import json
+    print("\nEDITED: {}".format(json.dumps(res,indent=4)))
+
+    # print(list(res.keys())[-1])
