@@ -45,7 +45,7 @@ class Processer():
         if config.DEBUG:
             docList = list(self.data['data'].keys())[4:6]
         else:
-            docList = list(self.data['data'].keys())[:1000]
+            docList = list(self.data['data'].keys())
 
         for docname in tqdm(docList):
             items_of_doc = self.data['data'][docname]

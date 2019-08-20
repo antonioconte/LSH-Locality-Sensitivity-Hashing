@@ -94,7 +94,7 @@ class TextPipeline:
                         words.append(token.lemma_.lower())
                     elif token.lemma_.isnumeric():
                         words.append("<num>")
-                trigrams[t] = self.generate_ngrams(words,word_based=False)
+                trigrams[t] = self.generate_ngrams(words,word_based=True)
                 if pos_current == len(doc) - 1:
                     break
         return trigrams
@@ -163,8 +163,8 @@ if __name__ == '__main__':
     But how do you do? I see I have frightened you—sit down and tell the news."""
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    # res = pip.generate_ngrams(sample,k=11,word_based=False)
     res = pip.convert_trigram(sample)
+    # res = pip.convert_trigram(sample)
     # print(res[-1])
     import json
     print("\nEDITED: {}".format(json.dumps(res,indent=4)))

@@ -56,15 +56,11 @@ class LSH():
 
     def train(self,dataset_path,part):
         from preprocess.process_data import Processer
-        print("WORD BASED: ",config.wordBased)
         processer = Processer(
             filepath=dataset_path,
             part=part
         )
-        # Generazione del formato atteso da LSH.train
         data = processer.run()
-        # print(json.dumps(data[0]['data'],indent=4))
-        # print(json.dumps(data, indent=4, sort_keys=True))
         lsh = self.__train(data)
         file = config.path_models +"_" + part
         self.__save_lsh(lsh,file)
@@ -79,11 +75,10 @@ class LSH():
         start_time = time.time()
 
         # True per la fase di predict
-        tokens = self.normalizer.convert(query, divNGram=True,wordBased=config.wordBased)
+        tokens = self.normalizer.convert(query, divNGram=True)
         m = MinHash(num_perm=self.permutation)
         for s in tokens:
             m.update(s.encode('utf8'))
-        print(tokens)
         idx_array = np.array(self.model.query(m, N))
 
         timing_search = "%.2f ms" % ((time.time() - start_time) * 1000)
@@ -108,23 +103,22 @@ class LSH():
 
 
 def predict():
-    lsh.load_lsh("./model/model_" + "trigram")
-    query = "journal european union"
-    query = "european parliament council"
+    lsh.load_lsh("./model/model_" + "phrase")
+    query = "in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/european commission of the european parliament and of the council of 6 september 2006"
+
     res = lsh.predict(query)
     print(json.dumps(res, ensure_ascii=False, indent=4))
     exit(1)
+
 if __name__ == '__main__':
     lsh = LSH()
     predict()
-
-
     # model_type_train = ["paragraph"]
     # model_type_train = ["phrase"]
     # model_type_train = ["section"]
-    model_type_train = ["trigram"]
-
-    # model_type_train = ["paragraph", "section","phrase","trigram"]
+    # model_type_train = ["trigram"]
+    model_type_train = ["paragraph", "section","phrase"]
     for m in model_type_train:
         lsh.train(config.filepath, m)
-    exit(1)
+        import gc
+        gc.collect()
