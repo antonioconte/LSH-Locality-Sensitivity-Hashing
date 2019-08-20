@@ -15,7 +15,6 @@ num_recommendations = 5
 default_threshold = 0.0 #all
 METRICS = "lev"
 
-filepath = '/home/anto/Scrivania/Tesi/dataset_train/'
 
 date_pattern = "(\d{2}|\d{1})(\s{1}|-|/)"+\
 "((Jan(uary)?|(Feb(ruary)?|Ma(r(ch)?|y)|Apr|Jun(e)?|Jul(y)?|Aug(ust)|(Sept|Nov|Dec)(ember)?)|Oct(ober)?)|(\d{1}|\d{2}))"+\
@@ -40,14 +39,10 @@ ip = socket.gethostbyname(socket.gethostname())
 wordBased = True
 
 if '130.136.4' in ip:
-    if wordBased:
-        path_models = '/public/antonio_conteduca/model_LSH/model'
-    else:
-        path_models = '/public/antonio_conteduca/model_LSH_char/model'
+    filepath = './'
+    path_models = '/public/antonio_conteduca/model_LSH/model'
 else:
-    if wordBased:
-        path_models = "/home/anto/Scrivania/Tesi/LSH/model/model"
-    else:
-        path_models = "/home/anto/Scrivania/Tesi/LSH/model_char/model"
+    filepath = '/home/anto/Scrivania/Tesi/dataset_train/'
+    path_models = "/home/anto/Scrivania/Tesi/LSH/model/model"
 
-print(">>>> RUN ON " + ip + " WITH WORDBASED = " + str(wordBased))
+print(">>>> RUN ON " + ip)
