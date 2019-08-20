@@ -7,7 +7,7 @@ threshold_default = {
     "TriGram": 0.90
 }
 
-DEBUG = False
+DEBUG = True
 size_nlp = "sm"
 
 permutations = 128

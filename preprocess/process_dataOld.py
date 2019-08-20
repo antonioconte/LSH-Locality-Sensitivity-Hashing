@@ -40,44 +40,37 @@ class Processer():
         else:
             print("TOTAL {}: {}".format(part,self.data['total']))
 
-    def __iter__(self):
+    def run(self):
+        result = []
         if config.DEBUG:
             docList = list(self.data['data'].keys())[4:6]
         else:
             docList = list(self.data['data'].keys())
 
-        result = []
+        for docname in tqdm(docList):
+            items_of_doc = self.data['data'][docname]
+            for (i,item) in enumerate(items_of_doc):
+                    if self.tag == 'T':
+                        data_list_normalized = self.normalizer.convert_trigram(item)
+                        import uuid
+                        for key in data_list_normalized.keys():
+                            result += [{
+                                    'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + key,
+                                    'data': data_list_normalized[key]
+                                }
+                            ]
 
-        if self.tag == 'T':
-            progress_doc = 0
-            for docname in docList:
-                print("Doc {}: {}/{}".format(docname,progress_doc,len(docList)))
-                progress_doc =  progress_doc + 1
-                items_of_doc = self.data['data'][docname]
-                for (i,item) in enumerate(items_of_doc):
-                            data_list_normalized = self.normalizer.convert_trigram(item)
-                            import uuid
-                            for key in data_list_normalized.keys():
-                                yield [{
-                                        'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + key,
-                                        'data': data_list_normalized[key]
-                                    }
-                           ]
+                    else:
+                        data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
+                        if len(data_list_normalized) > 0:
+                            result += [
+                                {
+                                    'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
+                                    'data': data_list_normalized
 
-        else:
-            for docname in tqdm(docList):
-                items_of_doc = self.data['data'][docname]
-                for (i,item) in enumerate(items_of_doc):
-                    data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
-                    if len(data_list_normalized) > 0:
-                        result +=[
-                            {
-                                'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
-                                'data': data_list_normalized
-
-                            }
-                        ]
-            return result
+                                }
+                            ]
+        return result
 
 if __name__ == '__main__':
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')

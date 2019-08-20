@@ -33,41 +33,6 @@ class LSH():
             lsh = pickle.load(f)
         self.model = lsh
 
-    def __train_trigram(self,data):
-
-        start_time = time.time()
-        forest = MinHashLSHForest(num_perm=config.permutations)
-        num_trigram = 0
-        for item in tqdm(data):
-            num_trigram += 1
-            if num_trigram % 10000 == 0 :
-                print("\n- Num Trigram {}".format(num_trigram))
-            tokens = item[0]['data']
-            tag = item[0]['tag']
-            m = MinHash(num_perm=config.permutations)
-            for s in tokens:
-                m.update(s.encode('utf8'))
-            forest.add(tag,m)
-            next(data)
-        forest.index()
-        print('It took %.2f seconds to build forest.' % (time.time() - start_time))
-
-        return forest
-
-
-    def train_trigram(self,dataset_path,part):
-        from preprocess.process_data import Processer
-        processer = iter(Processer(
-            filepath=dataset_path,
-            part=part
-        ))
-        # print(json.dumps(data,indent=4))
-        lsh = self.__train_trigram(processer)
-        file = config.path_models +"_" + part
-        print("\nSaving model...")
-        self.__save_lsh(lsh,file)
-        print("Model SAVED ~ {}".format(file))
-
     def __train(self,data):
         start_time = time.time()
         minhash = []
@@ -101,8 +66,6 @@ class LSH():
         file = config.path_models +"_" + part
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
-        print("================================")
-
 
     def predict(self,query,threshold=config.default_threshold,N=config.num_recommendations):
         if self.model == None:
@@ -142,7 +105,7 @@ class LSH():
 
 def predict(type):
     lsh.load_lsh("./model/model_" + type)
-    # query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/european commission of the european parliament and of the council of 6 september 2006."
+    # query = "in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/european commission of the european parliament and of the council of 6 september 2006"
     query = "provide conformity assessment"
     res = lsh.predict(query)
     print(json.dumps(res, ensure_ascii=False, indent=4))
@@ -150,18 +113,13 @@ def predict(type):
 
 if __name__ == '__main__':
     lsh = LSH()
-    config.DEBUG = False
     # predict("trigram")
     # model_type_train = ["paragraph"]
     # model_type_train = ["phrase"]
     # model_type_train = ["section"]
     model_type_train = ["trigram"]
-    # model_type_train = ["paragraph", "section","phrase","trigram"]
+    # model_type_train = ["paragraph", "section","phrase"]
     for m in model_type_train:
-        if m == "trigram":
-            lsh.train_trigram(config.filepath,m)
-        else:
-            lsh.train(config.filepath, m)
-
+        lsh.train(config.filepath, m)
         import gc
         gc.collect()

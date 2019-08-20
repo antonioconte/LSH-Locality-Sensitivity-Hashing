@@ -1,6 +1,6 @@
 from flask_cors import CORS
 from flask import Flask,request
-from LSH import LSH
+from LSHOld import LSH
 from preprocess.text_pipeline import TextPipeline
 import config
 import spacy
