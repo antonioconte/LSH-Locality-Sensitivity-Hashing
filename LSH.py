@@ -109,6 +109,7 @@ class LSH():
                 threshold=config.default_threshold,
                 N=config.num_recommendations,
                 Trigram = False):
+        print("CIAO")
         if Trigram:
             query = self.normalizer.norm_text_trigram(query)
 

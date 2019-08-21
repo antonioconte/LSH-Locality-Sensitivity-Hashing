@@ -1,6 +1,6 @@
 from flask_cors import CORS
 from flask import Flask,request
-from LSHOld import LSH
+from LSH import LSH
 from preprocess.text_pipeline import TextPipeline
 import config
 import spacy
@@ -109,6 +109,7 @@ def connect():
 		models.append("TriGram")
 	else:
 		models.append("TriGram")
+
 
 	if len(models) ==  4:
 		msg = "All loaded!"
