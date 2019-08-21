@@ -50,6 +50,7 @@ def query():
 	except:
 		maxResults = config.num_recommendations
 	LSH_m = None
+	T = False
 	if type == "Phrase":
 		LSH_m = LSH_f
 	elif type == "Paragraph":
@@ -57,6 +58,7 @@ def query():
 	elif type == "Section":
 		LSH_m = LSH_s
 	elif type == "TriGram":
+		T = True
 		LSH_m = LSH_t
 
 	if LSH_m == None:
@@ -66,7 +68,7 @@ def query():
 			mimetype='application/json'
 		)
 
-	result = LSH_m.predict(query,threshold=threshold,N=maxResults)
+	result = LSH_m.predict(query,threshold=threshold,N=maxResults,Trigram=T)
 
 	response = app.response_class(
 		response=json.dumps(result, indent=4),

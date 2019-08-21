@@ -104,7 +104,14 @@ class LSH():
         print("================================")
 
 
-    def predict(self,query,threshold=config.default_threshold,N=config.num_recommendations):
+    def predict(self,
+                query,
+                threshold=config.default_threshold,
+                N=config.num_recommendations,
+                Trigram = False):
+        if Trigram:
+            query = self.normalizer.norm_text_trigram(query)
+
         if self.model == None:
             raise Exception("Model is not loaded!")
 
@@ -142,16 +149,20 @@ class LSH():
 
 def predict(type):
     lsh.load_lsh("./model/model_" + type)
-    # query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/european commission of the european parliament and of the council of 6 september 2006."
-    query = "provide conformity assessment"
-    res = lsh.predict(query)
+    query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."
+    # query = "provide conformity assessment"
+    T = False
+    if type == "trigram":
+        T = True
+
+    res = lsh.predict(query,Trigram=T)
     print(json.dumps(res, ensure_ascii=False, indent=4))
     exit(1)
 
 if __name__ == '__main__':
     lsh = LSH()
     config.DEBUG = False
-    # predict("trigram")
+    predict("trigram")
     # model_type_train = ["paragraph"]
     # model_type_train = ["phrase"]
     # model_type_train = ["section"]

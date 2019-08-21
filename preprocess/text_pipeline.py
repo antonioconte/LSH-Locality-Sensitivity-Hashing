@@ -147,7 +147,10 @@ class TextPipeline:
         else:
             return " ".join(words)
 
-
+    def norm_text_trigram(self,text):
+        text = self.convert_trigram(text)
+        last = list(text.keys())
+        return last[-1]
 
 if __name__ == '__main__':
 
@@ -163,10 +166,11 @@ if __name__ == '__main__':
     But how do you do? I see I have frightened you—sit down and tell the news."""
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    res = pip.convert_trigram(sample)
+    # res = pip.convert_trigram(sample)
+    print(pip.norm_text_trigram(sample))
     # res = pip.convert_trigram(sample)
     # print(res[-1])
     import json
-    print("\nEDITED: {}".format(json.dumps(res,indent=4)))
+    # print("\nEDITED: {}".format(json.dumps(res,indent=4)))
 
     # print(list(res.keys())[-1])
