@@ -13,16 +13,17 @@ import spacy
 import re
 import config
 
-
 class TextPipeline:
-    def __init__(self,nlp):
+    def __init__(self,nlp, lang='english'):
         self.nlp = nlp
+        try:
+            from nltk.corpus import stopwords
+            self.stopwords = set(stopwords.words(lang))
+        except:
+            import nltk
+            nltk.download('stopwords')
 
     def generate_ngrams(self, tokens, k=3, word_based=True):
-        # if len(s) < 5:
-        #     n = len(s)
-        # Replace all none alphanumeric characters with spaces
-
         if word_based:
             tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         else:
@@ -32,11 +33,18 @@ class TextPipeline:
 
         return tokens
 
+    def expand_abbr(self, text):
+        text = re.sub(r'\(('+config.abbr_expand+')\)', '', text) #rimuove gli eventuali abbr_dict in parentesi
+        for a in list(config.abbr_dict.keys()):
+            reg = r'\b{}\b'.format(str(a))
+            text = re.sub(reg, config.abbr_dict[a], text)
+        return text
+
     def remove_special_pattern(self,text):
         pattern = {
             config.date_pattern: "DATE",
             "\(\d+\)+": '',         #(NUM)
-            "\d+\.": '',
+            "(\(|\s{1})\d+\.": '',
             "\d+/\d+": 'NUMSLASH',  #NUM/NUM
             "\d+\.\d+": 'NUM'       #NUM.NUM
         }
@@ -52,51 +60,53 @@ class TextPipeline:
                 marker_list.append(pattern[key])
         return text,marker_list
 
-    # restituisce lista con txt del trigramma e la relativa normalizzazione
+    def norm_trigram(self,text):
+        original = text
+        edited = text
+        tokens = text.split()
+
+        for token in tokens:
+            if 'DATE' in token:
+                edited = edited.replace(token,"<date>")
+                original_data = " ".join(token.split("DATE_")[1].split("_"))
+                original = original.replace(token,original_data)
+            if 'NUMSLASH' in token:
+                edited = edited.replace(token, "<numslash>")
+            edited = self.expand_abbr(edited)
+
+        edited = " ".join(edited.lower().replace(","," ").replace("."," ").split())
+
+
+        return original, edited
 
     def convert_trigram(self,text):
-        if len(text) < 5:
-            return []
-        text = text.lower()
-        (text, special_pattern_list) = self.remove_special_pattern(text)
-        text = " ".join(text.split())  # rm spazi extra
-        doc = self.nlp(text)
-        list_subs = ['DATE','NUMSLASH','NUM']
+        text = mark_date(text)
+        text,_ = self.remove_special_pattern(text)
+
+        tokens = text.split()
         trigrams = {}
-        for i in range(len(doc) - 1):
-            current_trigram = ""
+        for i in range(len(tokens)):
+            current_trigrams = ""
             k = 0
             pos_current = i
             while k < 3:
-                if not doc[pos_current].is_stop and doc[pos_current].is_alpha:
-                    current_trigram += " " + str(doc[pos_current])
+                # se non è una stopword
+                if not tokens[pos_current] in self.stopwords:
+                    current_trigrams += " " + tokens[pos_current]
                     k += 1
                 else:
-                    if k == 0:
-                        break
-                    else:
-                        if doc[pos_current].is_punct:
-                            current_trigram += str(doc[pos_current])
-                        else:
-                            current_trigram += " " + str(doc[pos_current])
+                    current_trigrams += " " + tokens[pos_current]
+
+                if k == 3:
+                    text_trigram, normalized_trigram = self.norm_trigram(current_trigrams.strip())
+
+                    trigrams[text_trigram] = [normalized_trigram]
+                if pos_current >= len(tokens) -1 :
+                    break
                 pos_current += 1
-                if pos_current > len(doc) - 1:
-                    break
-            trig = current_trigram.strip()
-            if len(trig) > 0 and len(trig.split()) > 2:
-                t = " ".join(current_trigram.split())
-                doc_x = self.nlp(t)
-                words = []
-                for token in doc_x:
-                    if token.text in list_subs:
-                        words.append("<" + token.text + ">")
-                    elif not token.is_stop and token.is_alpha:  # is_alpha per rimuove anche la punteggiatura
-                        words.append(token.lemma_.lower())
-                    elif token.lemma_.isnumeric():
-                        words.append("<num>")
-                trigrams[t] = self.generate_ngrams(words,word_based=True)
-                if pos_current == len(doc) - 1:
-                    break
+
+
+
         return trigrams
 
 
@@ -147,30 +157,62 @@ class TextPipeline:
         else:
             return " ".join(words)
 
-    def norm_text_trigram(self,text):
-        text = self.convert_trigram(text)
+    def norm_text_trigram(self,query):
+        ''' prende l'ultim trigramma della stringa '''
+        text = self.convert_trigram(query)
         last = list(text.keys())
-        return last[-1]
+
+        try:
+            original = last[-1]
+            normalized = text[last[-1]][0]
+            return original,normalized
+        except:
+            return query,"___"
+
+
+def get_list_date(text, result=[]):
+    date = re.search(config.date_pattern, text, flags=re.IGNORECASE)
+    if not date:
+        return result
+    result += [date.group(0)]
+    end = date.end()
+    text = text[end:]
+    return list(set(get_list_date(text, result)))
+
+def mark_date(text):
+    date_list = get_list_date(text)
+    if len(date_list) == 0:
+        return text
+    for d in date_list:
+        text = re.sub(d, "DATE_" + "_".join(d.split()), text)
+    return text
+
+
 
 if __name__ == '__main__':
 
     nlp = spacy.load('en_core_web_'+config.size_nlp)
-    sample = """Well, prince, so genoa and Lucca are now just family estates of the Buonapartes. 
-    1. 30/12/1994 It's my favourite pizza!
-    2. Hello world!
-    But I warn you, if you don’t tell me that this means war, 
-    if you still try to defend the infamies and horrors perpetrated 
-    by that Antichrist—I really believe he is Antichrist—I will have nothing more 
-    to do with you and you are no longer my friend, 
-    no longer my ‘faithful slave,’ as you call yourself! 
-    But how do you do? I see I have frightened you—sit down and tell the news."""
-    print("ORIGINAL: {}".format(sample))
+    sample = """(25) the general and specific chemical requirements laid down by this directive 
+    should aim at protecting the health of children from certain substances in toys, 
+    while the environmental concerns presented by toys are addressed by 
+    horizontal environmental legislation applying to electrical and electronic toys, 
+    namely directive 2002/95/EC of the european parliament and of 
+    the council of 27 january 2003 on the restriction of the use of certain hazardous
+    substances in electrical and electronic equipment and directive 2002/96/EC of 
+    the european parliament and of the council of 27 january 2003 on waste electrical and electronic 
+    equipment. in addition, environmental issues on waste are regulated by directive 2006/12/EC 
+    of the european parliament and of the council of 5 april 2006, those on packaging and 
+    packaging waste by directive 94/62/EC of the european parliament and of the council 
+    of 20 december 1994 and those on batteries and accumulators and waste batteries 
+    and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."""
+
+    # print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.convert_trigram(sample)
     print(pip.norm_text_trigram(sample))
     # res = pip.convert_trigram(sample)
     # print(res[-1])
-    import json
+    # import json
     # print("\nEDITED: {}".format(json.dumps(res,indent=4)))
 
     # print(list(res.keys())[-1])

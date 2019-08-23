@@ -17,7 +17,7 @@ from tqdm import tqdm
 from preprocess.text_pipeline import TextPipeline
 import json
 import config
-
+import uuid
 class Processer():
     def __init__(self,filepath="",part=""):
         self.filepath = filepath + "total_" + part + ".json"
@@ -42,42 +42,46 @@ class Processer():
 
     def __iter__(self):
         if config.DEBUG:
-            docList = list(self.data['data'].keys())[4:6]
+            docList = list(self.data['data'].keys())[:2]
+        else:
+            docList = list(self.data['data'].keys())
+
+
+        progress_doc = 0
+        for docname in docList:
+            print("Doc {}: {}/{}".format(docname,progress_doc,len(docList)))
+            progress_doc =  progress_doc + 1
+            items_of_doc = self.data['data'][docname]
+            for (i,item) in enumerate(items_of_doc):
+                        data_list_normalized = self.normalizer.convert_trigram(item)
+
+                        for key in data_list_normalized.keys():
+                            yield [{
+                                    'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + key,
+                                    'data': data_list_normalized[key]
+                                }
+                       ]
+    def run(self):
+        if config.DEBUG:
+            docList = list(self.data['data'].keys())[:2]
         else:
             docList = list(self.data['data'].keys())
 
         result = []
+        for docname in tqdm(docList):
+            items_of_doc = self.data['data'][docname]
+            for (i,item) in enumerate(items_of_doc):
+                data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
+                if len(data_list_normalized) > 0:
+                    result +=[
+                        {
+                            'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + item,
+                            'data': data_list_normalized
 
-        if self.tag == 'T':
-            progress_doc = 0
-            for docname in docList:
-                print("Doc {}: {}/{}".format(docname,progress_doc,len(docList)))
-                progress_doc =  progress_doc + 1
-                items_of_doc = self.data['data'][docname]
-                for (i,item) in enumerate(items_of_doc):
-                            data_list_normalized = self.normalizer.convert_trigram(item)
-                            import uuid
-                            for key in data_list_normalized.keys():
-                                yield [{
-                                        'tag': '[' + docname + '#' + self.tag +"_"+str(uuid.uuid4())+ ']' + key,
-                                        'data': data_list_normalized[key]
-                                    }
-                           ]
+                        }
+                    ]
+        return result
 
-        else:
-            for docname in tqdm(docList):
-                items_of_doc = self.data['data'][docname]
-                for (i,item) in enumerate(items_of_doc):
-                    data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
-                    if len(data_list_normalized) > 0:
-                        result +=[
-                            {
-                                'tag': '[' + docname + '#' + self.tag + str(i) + ']' + item,
-                                'data': data_list_normalized
-
-                            }
-                        ]
-            return result
 
 if __name__ == '__main__':
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')

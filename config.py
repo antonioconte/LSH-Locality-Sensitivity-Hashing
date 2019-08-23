@@ -6,7 +6,7 @@ threshold_default = {
     'Paragraph': 0.50,
     "TriGram": 0.90
 }
-
+FILE_TEST = True
 DEBUG = True
 size_nlp = "sm"
 
@@ -17,7 +17,7 @@ METRICS = "lev"
 
 
 date_pattern = "(\d{2}|\d{1})(\s{1}|-|/)"+\
-"((Jan(uary)?|(Feb(ruary)?|Ma(r(ch)?|y)|Apr|Jun(e)?|Jul(y)?|Aug(ust)|(Sept|Nov|Dec)(ember)?)|Oct(ober)?)|(\d{1}|\d{2}))"+\
+"((Jan(uary)?|(Feb(ruary)?|Ma(r(ch)?|y)|Apr(il)?|Jun(e)?|Jul(y)?|Aug(ust)|(Sept|Nov|Dec)(ember)?)|Oct(ober)?)|(\d{1}|\d{2}))"+\
                "(\s{1}|-|/)(\d{4}|(')?\d{2})"
 
 abbr_dict = {
