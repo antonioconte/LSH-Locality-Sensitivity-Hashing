@@ -3,7 +3,7 @@ import spacy
 from statistics import mean
 import time
 
-type = ['trigram','section', 'phrase', 'paragraph']
+type = ['trigram','section', 'phrase', 'paragraph'][1:]
 
 def testing(type):
     print("================= {} =================".format(type))
@@ -17,7 +17,6 @@ def testing(type):
     if type == "trigram":
         Trigram = True
 
-    nlp = spacy.load('en_core_web_sm')
     lsh = LSH()
     lsh.load_lsh("./model/model_{}".format(type))
     print("LSH {} model: loaded!".format(type))
@@ -38,10 +37,16 @@ def testing(type):
             else:
                 zeros += 1
                 mean_lev += [ 0.0 ]
+        except KeyboardInterrupt:
+            print("Time (Search): {} ms".format(round(mean(search_time), 2)))
+            print("Time (Total): {} ms".format(round(mean(total_time), 2)))
+            print("Lev (Mean): {}".format(round(mean(mean_lev), 2)))
+            print("#NoResult: {}".format(zeros))
+            exit(1)
         except:
             print(query)
             pass
-    time.sleep(1)
+    # time.sleep(1)
     print("Time (Search): {} ms".format(round(mean(search_time),2)))
     # print(search_time)
     print("Time (Total): {} ms".format(round(mean(total_time),2)))

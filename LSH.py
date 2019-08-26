@@ -177,10 +177,10 @@ if __name__ == '__main__':
     lsh = LSH()
 
     config.DEBUG = False
-    # predict("trigram")
+    predict("trigram")
     # model_type_train = ["paragraph", "section","phrase","trigram"]
-    # model_type_train = ["paragraph", "section","phrase"]
-    model_type_train = ["trigram"]
+    model_type_train = ["paragraph", "section","phrase"]
+    #model_type_train = ["trigram"]
     for m in model_type_train:
         lsh.train(config.filepath, m)
         import gc
