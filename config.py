@@ -8,7 +8,7 @@ threshold_default = {
 }
 FILE_TEST = True
 item_on_debug = 100
-DEBUG = True
+DEBUG = False
 size_nlp = "sm"
 
 permutations = 128

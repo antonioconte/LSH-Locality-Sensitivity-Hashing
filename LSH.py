@@ -8,6 +8,7 @@ import pickle
 from preprocess.utils import cleanhtml
 import spacy
 import time
+from tqdm import tqdm
 import random
 from preprocess.text_pipeline import TextPipeline
 
@@ -77,7 +78,6 @@ class LSH():
             import random
             if random.randint(0, 100) < 10:
                 example += [tag.split("]",1)[1]]
-                print(tag.split("]",1)[1])
             m = MinHash(num_perm=config.permutations)
             for s in tokens:
                 m.update(s.encode('utf8'))
@@ -97,7 +97,7 @@ class LSH():
 
 
     def train(self,dataset_path,part):
-        print("Training {}...".format(part))
+        print("====== TRAINING {}...".format(part))
         from preprocess.process_data import Processer
         if not part == "trigram":
             processer = Processer(
@@ -163,24 +163,12 @@ class LSH():
         return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
 
 
-# def predict(type):
-#     query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."
-#     # query = "provide conformity assessment"
-#     # query = """21 october 2006"""
-#
-#     T = False
-#     if type == "trigram":
-#         T = True
-#
-#     res = lsh.predict(query,Trigram=T)
-#     print(json.dumps(res, ensure_ascii=False, indent=4))
-#     exit(1)
 
 if __name__ == '__main__':
     model = LSH()
 
     # ===== PRINT TEST FILE .pickle ========================
-    # type = 'trigram'
+    # type = 'section'
     # with open('test_' + type, 'rb') as handle:
     #     l = pickle.load(handle)
     # [ print(i) for i in l]
@@ -188,13 +176,17 @@ if __name__ == '__main__':
     # exit()
 
     # ===== TRAIN ==========================================
-    type = 'trigram'
-    config.DEBUG = True
-    model.train(config.filepath, type)
-    exit()
+    # config.DEBUG = True
+    # type = 'phrase'
+    # model.train(config.filepath, type)
+    # import gc
+    # gc.collect()
+    # exit()
 
-
-    for t in ['trigram', 'paragraph', 'section', 'phrase'][:1]:
+    # ===== TESTING ========================================
+    for t in ['trigram', 'paragraph', 'section', 'phrase']:
+        empty = 0
+        T = False
         if t == 'trigram':
             T = True
         type = t
@@ -204,13 +196,13 @@ if __name__ == '__main__':
 
         with open('test_' + type, 'rb') as handle:
             queries = pickle.load(handle)
-
-        for i in range(1,11):
+        NUM_TEST = 100
+        for i in tqdm(range(1,NUM_TEST + 1)):
             random_index = random.randint(1, len(queries) - 1)
-        #     # random_index = 5
             query = queries[random_index]
-        #     # query = query[:len(query) - (random.randint(20,len(query))) ]
-        #     # query = query[:int(len(query)/2)]
-            print("{}. Predicting....".format(i))
             res = model.predict(query,Trigram=T)
-            print(json.dumps(res, ensure_ascii=False, indent=4))
+            if len(res['data']) == 0:
+                empty += 1
+            # print(json.dumps(res, ensure_ascii=False, indent=4))
+        time.sleep(0.25)
+        print("Empty Result: ", empty)
