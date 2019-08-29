@@ -7,6 +7,7 @@ threshold_default = {
     "TriGram": 0.90
 }
 FILE_TEST = True
+item_on_debug = 100
 DEBUG = True
 size_nlp = "sm"
 

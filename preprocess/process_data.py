@@ -42,7 +42,7 @@ class Processer():
 
     def __iter__(self):
         if config.DEBUG:
-            docList = list(self.data['data'].keys())[:2]
+            docList = list(self.data['data'].keys())[:config.item_on_debug]
         else:
             docList = list(self.data['data'].keys())
 
@@ -63,7 +63,7 @@ class Processer():
                        ]
     def run(self):
         if config.DEBUG:
-            docList = list(self.data['data'].keys())[:2]
+            docList = list(self.data['data'].keys())[:config.item_on_debug]
         else:
             docList = list(self.data['data'].keys())
 

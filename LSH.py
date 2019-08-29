@@ -34,7 +34,7 @@ class LSH():
             lsh = pickle.load(f)
         self.model = lsh
 
-    def __train_trigram(self,data,file_example=False):
+    def __train_trigram(self,data,file_example=False,part=""):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         num_trigram = 0
@@ -43,7 +43,7 @@ class LSH():
             num_trigram += 1
             tokens = item[0]['data']
             tag = item[0]['tag']
-            if random.randint(0, 100) == 0:
+            if random.randint(0, 1000) == 5:
                 item_choice = tag.split("]")[1]
                 if len("".join(item_choice.split("]"))) > 8:
                     example += [ item_choice ]
@@ -54,19 +54,20 @@ class LSH():
             forest.add(tag,m)
             next(data)
 
-        if file_example:
-            f = open("Test/trigram_test.json", 'w')
-            f.write(json.dumps(example, indent=4, sort_keys=True, ensure_ascii=False))
-            f.close()
-
-        print("------> Total: " + str(num_trigram))
         forest.index()
         print('It took %.2f seconds to build forest.' % (time.time() - start_time))
+
+        time.sleep(1)
+
+        if file_example:
+            print("=== Saving on file: test_{} ====".format(part))
+            with open('test_'+part, 'wb') as f:
+                pickle.dump(example, f)
 
         return forest
 
 
-    def __train(self,data,type,file_example=False):
+    def __train(self,data,type,file_example=False,part=""):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         example = []
@@ -83,11 +84,14 @@ class LSH():
             forest.add(tag,m)
 
         forest.index()
-        if file_example:
-            f = open("Test/"+type+"_test.json", 'w')
-            f.write(json.dumps(example, indent=4, sort_keys=True, ensure_ascii=False))
-            f.close()
         print('It took %.2f seconds to build forest.' % (time.time() - start_time))
+
+        time.sleep(1)
+        if file_example:
+            if file_example:
+                print("=== Saving on file: test_{} ====".format(part))
+                with open('test_' + part, 'wb') as f:
+                    pickle.dump(example, f)
 
         return forest
 
@@ -101,13 +105,13 @@ class LSH():
                 part=part
             )
             data = processer.run()
-            lsh = self.__train(data,part,file_example=config.FILE_TEST)
+            lsh = self.__train(data,part,file_example=config.FILE_TEST,part=part)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,
                 part=part
             ))
-            lsh = self.__train_trigram(processer,file_example=config.FILE_TEST)
+            lsh = self.__train_trigram(processer,file_example=config.FILE_TEST,part=part)
         file = config.path_models +"_" + part
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
@@ -159,29 +163,54 @@ class LSH():
         return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
 
 
-def predict(type):
-    lsh.load_lsh("./model/model_" + type)
-    query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."
-    # query = "provide conformity assessment"
-    # query = """21 october 2006"""
-
-    T = False
-    if type == "trigram":
-        T = True
-
-    res = lsh.predict(query,Trigram=T)
-    print(json.dumps(res, ensure_ascii=False, indent=4))
-    exit(1)
+# def predict(type):
+#     query = "(25) the general and specific chemical requirements laid down by this directive should aim at protecting the health of children from certain substances in toys, while the environmental concerns presented by toys are addressed by horizontal environmental legislation applying to electrical and electronic toys, namely directive 2002/95/european commission of the european parliament and of the council of 27 january 2003 on the restriction of the use of certain hazardous substances in electrical and electronic equipment and directive 2002/96/european commission of the european parliament and of the council of 27 january 2003 on waste electrical and electronic equipment. in addition, environmental issues on waste are regulated by directive 2006/12/european commission of the european parliament and of the council of 5 april 2006, those on packaging and packaging waste by directive 94/62/european commission of the european parliament and of the council of 20 december 1994 and those on batteries and accumulators and waste batteries and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."
+#     # query = "provide conformity assessment"
+#     # query = """21 october 2006"""
+#
+#     T = False
+#     if type == "trigram":
+#         T = True
+#
+#     res = lsh.predict(query,Trigram=T)
+#     print(json.dumps(res, ensure_ascii=False, indent=4))
+#     exit(1)
 
 if __name__ == '__main__':
-    lsh = LSH()
+    model = LSH()
 
-    config.DEBUG = False
-    predict("trigram")
-    # model_type_train = ["paragraph", "section","phrase","trigram"]
-    model_type_train = ["paragraph", "section","phrase"]
-    #model_type_train = ["trigram"]
-    for m in model_type_train:
-        lsh.train(config.filepath, m)
-        import gc
-        gc.collect()
+    # ===== PRINT TEST FILE .pickle ========================
+    # type = 'trigram'
+    # with open('test_' + type, 'rb') as handle:
+    #     l = pickle.load(handle)
+    # [ print(i) for i in l]
+    # print("TOTAL: {}".format(len(l)))
+    # exit()
+
+    # ===== TRAIN ==========================================
+    type = 'trigram'
+    config.DEBUG = True
+    model.train(config.filepath, type)
+    exit()
+
+
+    for t in ['trigram', 'paragraph', 'section', 'phrase'][:1]:
+        if t == 'trigram':
+            T = True
+        type = t
+        print("== {} == ".format(t))
+        model.load_lsh("./model/model_" + type)
+        print("model load!")
+
+        with open('test_' + type, 'rb') as handle:
+            queries = pickle.load(handle)
+
+        for i in range(1,11):
+            random_index = random.randint(1, len(queries) - 1)
+        #     # random_index = 5
+            query = queries[random_index]
+        #     # query = query[:len(query) - (random.randint(20,len(query))) ]
+        #     # query = query[:int(len(query)/2)]
+            print("{}. Predicting....".format(i))
+            res = model.predict(query,Trigram=T)
+            print(json.dumps(res, ensure_ascii=False, indent=4))

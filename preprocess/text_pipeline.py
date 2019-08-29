@@ -72,6 +72,8 @@ class TextPipeline:
                 original = original.replace(token,original_data)
             if 'NUMSLASH' in token:
                 edited = edited.replace(token, "<numslash>")
+            elif token in self.stopwords:
+                edited = edited.replace(token, "")
             edited = self.expand_abbr(edited)
 
         edited = " ".join(edited.lower().replace(","," ").replace("."," ").split())
