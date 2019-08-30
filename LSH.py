@@ -183,6 +183,18 @@ if __name__ == '__main__':
     # gc.collect()
     # exit()
 
+    # ===== SINGLE TEST =====================================
+    # query = "This Decision will be applicable from this date of publication of the Commission Recommendation"
+    # T = False
+    # t = "trigram"
+    # if t == 'trigram':
+    #     T = True
+    # model.load_lsh("./model/model_" + t)
+    # res = model.predict(query, Trigram=T)
+    # print(json.dumps(res, ensure_ascii=False, indent=4))
+    # exit()
+
+
     # ===== TESTING ========================================
     for t in ['trigram', 'paragraph', 'section', 'phrase']:
         empty = 0
@@ -206,3 +218,4 @@ if __name__ == '__main__':
             # print(json.dumps(res, ensure_ascii=False, indent=4))
         time.sleep(0.25)
         print("Empty Result: ", empty)
+
