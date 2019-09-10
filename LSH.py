@@ -184,19 +184,23 @@ if __name__ == '__main__':
     # exit()
 
     # ===== SINGLE TEST =====================================
-    # query = "This Decision will be applicable from this date of publication of the Commission Recommendation"
-    # T = False
     # t = "trigram"
+    # query = "This Decision will be applicable from this date of publication of the Commission Recommendation"
+    # query ="""in addition, the commission will consult member states, the stakeholders and the authority
+    #        to discuss the possibility to reduce the current maximum limits in all
+    #        meat products and to further simplify the rules for the traditionally manufactured products"""
+    # T = False
     # if t == 'trigram':
     #     T = True
     # model.load_lsh("./model/model_" + t)
     # res = model.predict(query, Trigram=T)
+    # print("Q:", query)
     # print(json.dumps(res, ensure_ascii=False, indent=4))
     # exit()
 
 
     # ===== TESTING ========================================
-    for t in ['trigram', 'paragraph', 'section', 'phrase']:
+    for t in ['trigram', 'paragraph', 'section', 'phrase'][:1]:
         empty = 0
         T = False
         if t == 'trigram':
@@ -206,15 +210,22 @@ if __name__ == '__main__':
         model.load_lsh("./model/model_" + type)
         print("model load!")
 
+        if t == 'trigram':
+            # per prendere le frasi come spunto per i trigrammi
+            type = 'phrase'
+
         with open('test_' + type, 'rb') as handle:
             queries = pickle.load(handle)
-        NUM_TEST = 100
+
+        NUM_TEST = 10
+
         for i in tqdm(range(1,NUM_TEST + 1)):
             random_index = random.randint(1, len(queries) - 1)
             query = queries[random_index]
             res = model.predict(query,Trigram=T)
             if len(res['data']) == 0:
                 empty += 1
+            # print('>>>>>>>>> ',query,'\n')
             # print(json.dumps(res, ensure_ascii=False, indent=4))
         time.sleep(0.25)
         print("Empty Result: ", empty)

@@ -81,12 +81,16 @@ class TextPipeline:
 
         return original, edited
 
-    def convert_trigram(self,text):
+    def convert_trigram(self,text,Train=True):
         text = mark_date(text)
         text,_ = self.remove_special_pattern(text)
 
         tokens = text.split()
-        trigrams = {}
+        if Train:
+            trigrams = {}
+        else:
+            trigrams = []
+
         for i in range(len(tokens)):
             current_trigrams = ""
             k = 0
@@ -101,12 +105,18 @@ class TextPipeline:
 
                 if k == 3:
                     text_trigram, normalized_trigram = self.norm_trigram(current_trigrams.strip())
-
-                    trigrams[text_trigram] = [normalized_trigram]
+                    if Train:
+                        trigrams[text_trigram] = [normalized_trigram]
+                    else:
+                        trigrams += [{text_trigram: [normalized_trigram]}]
                 if pos_current >= len(tokens) -1 :
                     break
+
                 pos_current += 1
 
+        # import json
+        # print(json.dumps(trigrams,indent=4,sort_keys=False))
+        # exit()
 
 
         return trigrams
@@ -160,13 +170,13 @@ class TextPipeline:
             return " ".join(words)
 
     def norm_text_trigram(self,query):
-        ''' prende l'ultim trigramma della stringa '''
-        text = self.convert_trigram(query)
-        last = list(text.keys())
+        ''' prende l'ultimo trigramma della stringa '''
+        # print(original, normalized[0]
+        text = self.convert_trigram(query, Train=False)[-1]
 
         try:
-            original = last[-1]
-            normalized = text[last[-1]][0]
+            original = list(text.keys())[0]
+            normalized = list(text.values())[0][0]
             return original,normalized
         except:
             return query,"___"
@@ -208,6 +218,7 @@ if __name__ == '__main__':
     of 20 december 1994 and those on batteries and accumulators and waste batteries 
     and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."""
 
+    # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     # print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
     # res = pip.convert_trigram(sample)
