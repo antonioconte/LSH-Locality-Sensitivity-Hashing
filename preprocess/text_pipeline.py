@@ -121,6 +121,17 @@ class TextPipeline:
 
         return trigrams
 
+    def norm_text_trigram(self,query):
+        ''' prende l'ultimo trigramma della stringa '''
+        # print(original, normalized[0]
+        text = self.convert_trigram(query, Train=False)[-1]
+
+        try:
+            original = list(text.keys())[0]
+            normalized = list(text.values())[0][0]
+            return original,normalized
+        except:
+            return query,"___"
 
     def convert(self,text,divNGram=True,wordBased=True):
         # print("> ", text)
@@ -169,17 +180,7 @@ class TextPipeline:
         else:
             return " ".join(words)
 
-    def norm_text_trigram(self,query):
-        ''' prende l'ultimo trigramma della stringa '''
-        # print(original, normalized[0]
-        text = self.convert_trigram(query, Train=False)[-1]
 
-        try:
-            original = list(text.keys())[0]
-            normalized = list(text.values())[0][0]
-            return original,normalized
-        except:
-            return query,"___"
 
 
 def get_list_date(text, result=[]):
