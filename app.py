@@ -83,32 +83,20 @@ def connect():
 	msg = "NOT GOOD"
 	# load model phrase
 	global LSH_f
-	if LSH_f.model == None:
-		LSH_f.load_lsh(config.path_models + "_phrase")
-		models.append("Phrase")
-	else:
-		models.append("Phrase")
+	LSH_f.load_lsh(config.path_models + "_phrase")
+	models.append("Phrase")
 
 	global LSH_p
-	if LSH_p.model == None:
-		LSH_p.load_lsh(config.path_models + "_paragraph")
-		models.append("Paragraph")
-	else:
-		models.append("Paragraph")
+	LSH_p.load_lsh(config.path_models + "_paragraph")
+	models.append("Paragraph")
 
 	global LSH_s
-	if LSH_s.model == None:
-		LSH_s.load_lsh(config.path_models + "_section")
-		models.append("Section")
-	else:
-		models.append("Section")
+	LSH_s.load_lsh(config.path_models + "_section")
+	models.append("Section")
 
 	global LSH_t
-	if LSH_t.model == None:
-		LSH_t.load_lsh(config.path_models + "_trigram")
-		models.append("TriGram")
-	else:
-		models.append("TriGram")
+	LSH_t.load_lsh(config.path_models + "_trigram")
+	models.append("TriGram")
 
 
 	if len(models) ==  4:
