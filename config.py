@@ -3,10 +3,11 @@ countries = ['United States', 'Afghanistan', 'Albania', 'Algeria', 'American Sam
 countries_patt = '|'.join(countries)
 threshold_default = {
     'Section': 0.3,
-    'Phrase': 0.80,
-    'Paragraph': 0.50,
-    "TriGram": 0.90
+    'Phrase': 0.3,
+    'Paragraph': 0.3,
+    "TriGram": 0.30
 }
+
 FILE_TEST = True
 item_on_debug = 100
 DEBUG = False

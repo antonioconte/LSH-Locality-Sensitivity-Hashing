@@ -68,7 +68,7 @@ class LSH():
         return forest
 
 
-    def __train(self,data,type,file_example=False,part=""):
+    def __train(self,data,file_example=False,part=""):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         example = []
@@ -105,7 +105,7 @@ class LSH():
                 part=part
             )
             data = processer.run()
-            lsh = self.__train(data,part,file_example=config.FILE_TEST,part=part)
+            lsh = self.__train(data,file_example=config.FILE_TEST,part=part)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,
