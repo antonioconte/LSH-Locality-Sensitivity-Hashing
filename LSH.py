@@ -203,8 +203,8 @@ def train_all():
         import gc
         gc.collect()
 
-    model = LSH('trigram',k='3')
-    model.train(config.filepath)
+    # model = LSH('trigram',k='3')
+    # model.train(config.filepath)
 
     exit()
 
@@ -254,7 +254,7 @@ def testing(all=True,type='',k='3'):
 if __name__ == '__main__':
 
     # ===== TRAIN ALL ======================================
-    config.DEBUG = True
+    # config.DEBUG = True
     train_all()
 
     # ===== PRINT TEST FILE .pickle ========================
