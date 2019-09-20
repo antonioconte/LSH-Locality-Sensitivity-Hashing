@@ -24,6 +24,7 @@ class Processer():
         self.filepath = filepath + "total_" + part + ".json"
         self.nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.normalizer = TextPipeline(self.nlp)
+
         if part == "paragraph" or part == "section" or part == "trigram":
             if part == "trigram":
                 # uso le frasi per l'estazione dei trigrammi

@@ -15,6 +15,8 @@ class LSH():
     def __init__(self,type, k = '3'):
         nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.k = k
+
+        self.entryname = 'Minhash_K_'+self.k
         config.kGRAM = self.k
         self.normalizer = TextPipeline(nlp)
         self.permutation = config.permutations
@@ -26,11 +28,7 @@ class LSH():
         else:
             self.path_model = config.path_models + "_" + self.type + "_" + self.k
 
-        self.path_test = ""
-        if self.type in 'trigram':
-            self.path_test = 'testing_file/' + "_" + self.type
-        else:
-            self.path_test = 'testing_file/' + "_" + self.type + "_" + self.k
+        self.path_test = 'testing_file/' + "_" + self.type
 
     def setPerm(self,p):
         self.permutation = p
@@ -90,7 +88,6 @@ class LSH():
 
 
     def __train(self,data,file_example=False):
-        part = self.type
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         example = []
@@ -120,7 +117,7 @@ class LSH():
 
     def train(self,dataset_path):
         part = self.type
-        print("====== TRAINING {}...".format(part))
+        print("====== TRAINING {} [ K = {} ] ...".format(part,config.kGRAM))
         from preprocess.process_data import Processer
         if not part == "trigram":
             processer = Processer(
@@ -186,26 +183,19 @@ class LSH():
             res_json = sorted(res_json, key=lambda i: i['lev'], reverse=True)
 
         timing = "%.2f ms" % ((time.time() - start_time) * 1000)
-        return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
+        return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold, 'algoritm':self.entryname}
 
 
-def train_all():
+def train_all(k = '3'):
     type = ['paragraph', 'section', 'phrase']
     for t in type:
-        model = LSH(t,k='3')
+        model = LSH(t, k=k)
         model.train(config.filepath)
         import gc
         gc.collect()
 
-    for t in type:
-        model = LSH(t,k='1')
-        model.train(config.filepath)
-        import gc
-        gc.collect()
-
-    # model = LSH('trigram',k='3')
-    # model.train(config.filepath)
-
+    model = LSH('trigram',k='3')
+    model.train(config.filepath)
     exit()
 
 def testing(all=True,type='',k='3'):
@@ -227,8 +217,7 @@ def testing(all=True,type='',k='3'):
             # per prendere le frasi come spunto per i trigrammi
             t = 'phrase'
 
-        path_test = 'testing_file/_'+t+'_'+k
-
+        path_test = 'testing_file/_'+t
         with open(path_test, 'rb') as handle:
             queries = pickle.load(handle)
 
@@ -255,7 +244,8 @@ if __name__ == '__main__':
 
     # ===== TRAIN ALL ======================================
     # config.DEBUG = True
-    train_all()
+    #  k = { '1', '3'}
+    train_all(k='3')
 
     # ===== PRINT TEST FILE .pickle ========================
     # type = 'section'
@@ -266,7 +256,8 @@ if __name__ == '__main__':
     # exit()
 
     # ===== TESTING ========================================
-
+    # type, k = 'phrase', '1'
+    # testing(all=False,type=type,k=k)
 
 
     # ===== SINGLE TEST =====================================

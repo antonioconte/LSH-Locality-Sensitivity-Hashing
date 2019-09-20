@@ -13,7 +13,7 @@ import re
 import config
 
 class TextPipeline:
-    def __init__(self,nlp, lang='english'):
+    def __init__(self,nlp,lang='english'):
         self.nlp = nlp
         try:
             from nltk.corpus import stopwords
@@ -22,8 +22,8 @@ class TextPipeline:
             import nltk
             nltk.download('stopwords')
 
-    def generate_ngrams(self, tokens, k=config.kGRAM):
-        k = int(k)
+    def generate_ngrams(self, tokens):
+        k = int(config.kGRAM)
         tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         return tokens
 
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     packaging waste by directive 94/62/EC of the european parliament and of the council 
     of 20 december 1994 and those on batteries and accumulators and waste batteries 
     and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."""
-
+    # config.kGRAM = 1
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
