@@ -25,7 +25,7 @@ class LSH():
         self.num_results = n
 
     def __save_lsh(self, obj, path="model"):
-        with open(path, 'wb') as f:
+        with open(path+ "_" + config.kGRAM, 'wb') as f:
             pickle.dump(obj, f)
         print("Saved: {}".format(path))
 
@@ -124,7 +124,7 @@ class LSH():
             ))
             lsh = self.__train_trigram(processer,file_example=config.FILE_TEST,part=part)
 
-        file = config.path_models +"_" + part
+        file = config.path_models +"_" + part + "_" + config.kGRAM
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
         print("================================")
@@ -199,7 +199,7 @@ def testing(model, all=True,type=''):
             T = True
         type = t
         print("== {} == ".format(t))
-        model.load_lsh("./model/model_" + type)
+        model.load_lsh("./model/model_" + type + "_"+config.kGRAM)
         print("model load!")
 
         if t == 'trigram':
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     # exit()
 
     # ===== TESTING ========================================
-    # testing(model, all=False,type='trigram')
+    testing(model, all=False,type='phrase')
 
     # ===== TRAIN ==========================================
     # config.DEBUG = True
@@ -262,7 +262,7 @@ if __name__ == '__main__':
     # T = False
     # if t == 'trigram':
     #     T = True
-    # model.load_lsh("./model/model_" + t)
+    # model.load_lsh("./model/model_" + t + "_" + config.kGRAM)
     # res = model.predict(query, Trigram=T)
     # print("Q:", query)
     # print(json.dumps(res, ensure_ascii=False, indent=4))

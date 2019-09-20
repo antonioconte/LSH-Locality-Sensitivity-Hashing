@@ -22,7 +22,7 @@ class TextPipeline:
             import nltk
             nltk.download('stopwords')
 
-    def generate_ngrams(self, tokens, k=3):
+    def generate_ngrams(self, tokens, k=config.kGRAM):
         tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         return tokens
 
@@ -201,9 +201,9 @@ if __name__ == '__main__':
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    # res = pip.convert(sample,divNGram=False)
+    res = pip.convert(sample,divNGram=True)
     # res = pip.convert_trigram(sample)
-    res = pip.norm_text_trigram("hello world")
+    # res = pip.norm_text_trigram("hello world")
     # print(res[-1])
 
     import json

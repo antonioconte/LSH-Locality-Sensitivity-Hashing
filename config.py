@@ -7,7 +7,7 @@ threshold_default = {
     'Paragraph': 0.3,
     "TriGram": 0.30
 }
-
+kGRAM = '3'
 FILE_TEST = True
 item_on_debug = 2
 DEBUG = False

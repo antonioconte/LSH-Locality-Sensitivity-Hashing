@@ -79,24 +79,26 @@ def query():
 
 @app.route('/connect/', methods=['GET'])
 def connect():
+	k = str(request.args.get('k', default=3, type=int))
+
 	models = []
 	msg = "NOT GOOD"
 	# load model phrase
 	global LSH_f
-	LSH_f.load_lsh(config.path_models + "_phrase")
-	models.append("Phrase")
+	LSH_f.load_lsh(config.path_models + "_phrase_"+k)
+	models.append("Phrase_"+k)
 
 	global LSH_p
-	LSH_p.load_lsh(config.path_models + "_paragraph")
-	models.append("Paragraph")
+	LSH_p.load_lsh(config.path_models + "_paragraph_"+k)
+	models.append("Paragraph_"+k)
 
 	global LSH_s
-	LSH_s.load_lsh(config.path_models + "_section")
-	models.append("Section")
+	LSH_s.load_lsh(config.path_models + "_section_"+k)
+	models.append("Section_"+k)
 
-	global LSH_t
-	LSH_t.load_lsh(config.path_models + "_trigram")
-	models.append("TriGram")
+	# global LSH_t
+	# LSH_t.load_lsh(config.path_models + "_trigram")
+	# models.append("TriGram")
 
 
 	if len(models) ==  4:
@@ -107,6 +109,7 @@ def connect():
 	response = app.response_class(
 		response=json.dumps({
 			'data': msg,
+			'K': k,
 			'models': models,
 			'path':config.path_models,
 			'wordbased': config.wordBased,
