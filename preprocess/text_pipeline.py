@@ -23,6 +23,7 @@ class TextPipeline:
             nltk.download('stopwords')
 
     def generate_ngrams(self, tokens, k=config.kGRAM):
+        k = int(config.kGRAM)
         tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         return tokens
 
