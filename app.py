@@ -96,9 +96,9 @@ def connect():
 	LSH_s.load_lsh(config.path_models + "_section_"+k)
 	models.append("Section_"+k)
 
-	# global LSH_t
-	# LSH_t.load_lsh(config.path_models + "_trigram")
-	# models.append("TriGram")
+	global LSH_t
+	LSH_t.load_lsh(config.path_models + "_trigram")
+	models.append("TriGram")
 
 
 	if len(models) ==  4:
