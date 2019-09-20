@@ -12,11 +12,25 @@ import random
 import numpy as np
 
 class LSH():
-    def __init__(self,perm = config.permutations):
+    def __init__(self,type, k = '3'):
         nlp = spacy.load('en_core_web_'+config.size_nlp)
+        self.k = k
+        config.kGRAM = self.k
         self.normalizer = TextPipeline(nlp)
-        self.permutation = perm
+        self.permutation = config.permutations
+        self.type = type
         self.model = None
+        self.path_model = ""
+        if self.type in 'trigram':
+            self.path_model = config.path_models + "_" + self.type
+        else:
+            self.path_model = config.path_models + "_" + self.type + "_" + self.k
+
+        self.path_test = ""
+        if self.type in 'trigram':
+            self.path_test = 'testing_file/' + "_" + self.type
+        else:
+            self.path_test = 'testing_file/' + "_" + self.type + "_" + self.k
 
     def setPerm(self,p):
         self.permutation = p
@@ -25,14 +39,13 @@ class LSH():
         self.num_results = n
 
     def __save_lsh(self, obj, path="model"):
-        with open(path+ "_" + config.kGRAM, 'wb') as f:
+        with open(self.path_model, 'wb') as f:
             pickle.dump(obj, f)
         print("Saved: {}".format(path))
 
-    def load_lsh(self,path):
-        with (open(path, "rb")) as f:
-            lsh = pickle.load(f)
-        self.model = lsh
+    def load_lsh(self):
+        with (open(self.path_model, "rb")) as f:
+            self.model = pickle.load(f)
 
     def __train_trigram(self,data,file_example=False,part=""):
         start_time = time.time()
@@ -41,15 +54,12 @@ class LSH():
         example = []
         for item in data:
             try:
-                string = item[0]['data']
-                tokens = string[0].split()
-                if len(tokens) < 3:
-                    # print('> min of 3',tokens)
+                if len(item[0]['data'][0].split()) < 3:
                     continue
                 num_trigram += 1
-                tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
 
-                # tokens = [tokens[0:2],tokens[1:]]
+
+                tokens = item[0]['data']
                 tag = item[0]['tag']
                 if random.randint(0, 1000) == 5:
                     item_choice = tag.split("]")[1]
@@ -79,7 +89,8 @@ class LSH():
         return forest
 
 
-    def __train(self,data,file_example=False,part=""):
+    def __train(self,data,file_example=False):
+        part = self.type
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         example = []
@@ -100,14 +111,15 @@ class LSH():
         time.sleep(1)
         if file_example:
             if file_example:
-                print("=== Saving on file: test_{} ====".format(part))
-                with open('test_' + part, 'wb') as f:
+                print("=== Saving on file:  ====".format(self.path_test))
+                with open(self.path_test, 'wb') as f:
                     pickle.dump(example, f)
 
         return forest
 
 
-    def train(self,dataset_path,part):
+    def train(self,dataset_path):
+        part = self.type
         print("====== TRAINING {}...".format(part))
         from preprocess.process_data import Processer
         if not part == "trigram":
@@ -116,7 +128,7 @@ class LSH():
                 part=part
             )
             data = processer.run()
-            lsh = self.__train(data,file_example=config.FILE_TEST,part=part)
+            lsh = self.__train(data,file_example=config.FILE_TEST)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,
@@ -124,9 +136,9 @@ class LSH():
             ))
             lsh = self.__train_trigram(processer,file_example=config.FILE_TEST,part=part)
 
-        file = config.path_models +"_" + part + "_" + config.kGRAM
-        self.__save_lsh(lsh,file)
-        print("Model SAVED ~ {}".format(file))
+
+        self.__save_lsh(lsh,self.path_model)
+        print("Model SAVED ~ {}".format(self.path_model))
         print("================================")
 
 
@@ -151,8 +163,6 @@ class LSH():
                         'threshold': threshold}
             else:
                 tokens = [ query_norm ]
-                # tokens = query_norm.split()
-                # tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
 
         start_time = time.time()
         m = MinHash(num_perm=self.permutation)
@@ -179,35 +189,47 @@ class LSH():
         return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
 
 
-def train_all(model):
-    type = ['trigram', 'paragraph', 'section', 'phrase']
+def train_all():
+    type = ['paragraph', 'section', 'phrase']
     for t in type:
-        model.train(config.filepath, t)
+        model = LSH(t,k='3')
+        model.train(config.filepath)
         import gc
         gc.collect()
+
+    for t in type:
+        model = LSH(t,k='1')
+        model.train(config.filepath)
+        import gc
+        gc.collect()
+
+    model = LSH('trigram',k='3')
+    model.train(config.filepath)
+
     exit()
 
-def testing(model, all=True,type=''):
+def testing(all=True,type='',k='3'):
     if all:
-        types = ['trigram', 'paragraph', 'section', 'phrase']
+        types = ['trigram','paragraph', 'section', 'phrase']
     else:
         types = [type]
 
     for t in types:
+        model = LSH(t, k=k)
+        model.load_lsh()
+        print("model load!")
         empty = 0
         T = False
+
+        print("== {} == ".format(t))
         if t == 'trigram':
             T = True
-        type = t
-        print("== {} == ".format(t))
-        model.load_lsh("./model/model_" + type + "_"+config.kGRAM)
-        print("model load!")
-
-        if t == 'trigram':
             # per prendere le frasi come spunto per i trigrammi
-            type = 'phrase'
+            t = 'phrase'
 
-        with open('test_' + type, 'rb') as handle:
+        path_test = 'testing_file/_'+t+'_'+k
+
+        with open(path_test, 'rb') as handle:
             queries = pickle.load(handle)
 
         NUM_TEST = 10
@@ -221,17 +243,19 @@ def testing(model, all=True,type=''):
             print(json.dumps(res, ensure_ascii=False, indent=4))
         time.sleep(0.25)
         print("Empty Result: ", empty)
-
+        print("=====================",t,k, "===========================")
         import gc
         gc.collect()
+
+
 
     exit()
 
 if __name__ == '__main__':
-    model = LSH()
 
     # ===== TRAIN ALL ======================================
-    # train_all(model)
+    config.DEBUG = True
+    train_all()
 
     # ===== PRINT TEST FILE .pickle ========================
     # type = 'section'
@@ -242,15 +266,6 @@ if __name__ == '__main__':
     # exit()
 
     # ===== TESTING ========================================
-    testing(model, all=False,type='phrase')
-
-    # ===== TRAIN ==========================================
-    # config.DEBUG = True
-    type = 'trigram'
-    model.train(config.filepath, type)
-    import gc
-    gc.collect()
-    exit()
 
 
 

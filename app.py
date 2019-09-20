@@ -7,10 +7,7 @@ import spacy
 import json
 from preprocess import utils
 
-LSH_f = LSH()
-LSH_p = LSH()
-LSH_s = LSH()
-LSH_t = LSH()
+LSH_f = LSH_p = LSH_s = LSH_t = None
 
 app = Flask(__name__)
 
@@ -80,24 +77,29 @@ def query():
 @app.route('/connect/', methods=['GET'])
 def connect():
 	k = str(request.args.get('k', default=3, type=int))
+	global LSH_f
+	global LSH_p
+	global LSH_s
+	global LSH_t
 
 	models = []
 	msg = "NOT GOOD"
 	# load model phrase
-	global LSH_f
-	LSH_f.load_lsh(config.path_models + "_phrase_"+k)
+
+	LSH_f = LSH('phrase',k=k)
+	LSH_f.load_lsh()
 	models.append("Phrase_"+k)
 
-	global LSH_p
-	LSH_p.load_lsh(config.path_models + "_paragraph_"+k)
+	LSH_p = LSH('paragraph',k=k)
+	LSH_p.load_lsh()
 	models.append("Paragraph_"+k)
 
-	global LSH_s
-	LSH_s.load_lsh(config.path_models + "_section_"+k)
+	LSH_s = LSH('section',k=k)
+	LSH_s.load_lsh()
 	models.append("Section_"+k)
 
-	global LSH_t
-	LSH_t.load_lsh(config.path_models + "_trigram")
+	LSH_t = LSH('trigram',k=k)
+	LSH_t.load_lsh()
 	models.append("TriGram")
 
 
