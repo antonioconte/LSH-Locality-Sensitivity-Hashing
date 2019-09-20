@@ -71,7 +71,7 @@ class Processer():
         for docname in tqdm(docList):
             items_of_doc = self.data['data'][docname]
             for (i,item) in enumerate(items_of_doc):
-                data_list_normalized = self.normalizer.convert(item, wordBased=config.wordBased)
+                data_list_normalized = self.normalizer.convert(item)
                 if len(data_list_normalized) > 0:
                     result +=[
                         {

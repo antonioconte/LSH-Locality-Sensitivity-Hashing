@@ -177,11 +177,11 @@ if __name__ == '__main__':
 
     # ===== TRAIN ==========================================
     # config.DEBUG = True
-    # type = 'phrase'
-    # model.train(config.filepath, type)
-    # import gc
-    # gc.collect()
-    # exit()
+    type = 'phrase'
+    model.train(config.filepath, type)
+    import gc
+    gc.collect()
+    exit()
 
     # ===== SINGLE TEST =====================================
     # t = "trigram"

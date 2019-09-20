@@ -23,14 +23,8 @@ class TextPipeline:
             import nltk
             nltk.download('stopwords')
 
-    def generate_ngrams(self, tokens, k=3, word_based=True):
-        if word_based:
-            tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
-        else:
-            tokens = " ".join(tokens)
-            k = 15
-            tokens = [tokens[i:i + k] for i in range(len(tokens) - k + 1)]
-
+    def generate_ngrams(self, tokens, k=3):
+        tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         return tokens
 
     def expand_abbr(self, text):
@@ -43,10 +37,10 @@ class TextPipeline:
     def remove_special_pattern(self,text):
         pattern = {
             config.date_pattern: "DATE",
-            "\(\d+\)+": '',         #(NUM)
-            "(\(|\s{1})\d+\.": '',
+            "\(\d+\)+": 'NUMPAR',         #(NUM)
+            "(\(|\s{1})\d+\.(\)|\s{1})": '',
             "\d+/\d+": 'NUMSLASH',  #NUM/NUM
-            "\d+\.\d+": 'NUM'       #NUM.NUM
+            "(\s{1})?\d+\.\d+(\s{1})?": 'NUM'       #NUM.NUM
         }
 
         marker_list = []
@@ -133,39 +127,25 @@ class TextPipeline:
         except:
             return query,"___"
 
-    def convert(self,text,divNGram=True,wordBased=True):
-        # print("> ", text)
+    def convert(self,text,divNGram=True):
+
         if len(text) < 5:
-            return []
+            if divNGram:
+                return [""]
+            else:
+                return ""
+
         text = " ".join(text.split())  #rm spazi extra
         (text, special_pattern_list) = self.remove_special_pattern(text)
+
+        list_Ent = ['COUNTRY']
+        text = re.sub(config.countries_patt, 'COUNTRY', text)
+
+        text = self.expand_abbr(text)
         doc = self.nlp(text)
-
-        # Dependency Parsing: https://spacy.io/api/annotation#dependency-parsing
-        list_DPars = ['nsubj']
-        for chunk in doc.noun_chunks:
-            text_current = chunk.text
-            try:
-                if chunk.root.dep_ in list_DPars:
-                    text = re.sub(r'\b{}\b'.format(text_current), chunk.root.dep_, text)
-            except:
-                pass
-
-        # Detect Entity: https://spacy.io/api/annotation#named-entities
-        list_Ent = ['GPE']
-        for ent in doc.ents:
-            try:
-                if ent.label_ in list_Ent:
-                    text = re.sub(ent.text, ent.label_,text)
-            except:
-                pass
-
-        doc = self.nlp(text)
-        list_sost = list_DPars + list_Ent + special_pattern_list
-
         words = []
 
-
+        list_sost = list_Ent + special_pattern_list
         #Part-of-speech tagging: https://spacy.io/usage/linguistic-features#pos-tagging
         for token in doc:
             if token.text in list_sost:
@@ -173,14 +153,12 @@ class TextPipeline:
             elif not token.is_stop and token.is_alpha: #is_alpha per rimuove anche la punteggiatura
                 words.append(token.lemma_.lower())
             elif token.lemma_.isnumeric():
-                words.append("<num>")
+                words.append("<NUM>")
 
         if divNGram:
-             return self.generate_ngrams(words,word_based=wordBased)
+             return self.generate_ngrams(words)
         else:
             return " ".join(words)
-
-
 
 
 def get_list_date(text, result=[]):
@@ -205,9 +183,9 @@ def mark_date(text):
 if __name__ == '__main__':
 
     nlp = spacy.load('en_core_web_'+config.size_nlp)
-    sample = """(25) the general and specific chemical requirements laid down by this directive 
+    sample = """(25) Italy Germany the general and specific chemical requirements laid down by this directive 
     should aim at protecting the health of children from certain substances in toys, 
-    while the environmental concerns presented by toys are addressed by 
+    while the 18 environmental concerns presented by toys are addressed by 
     horizontal environmental legislation applying to electrical and electronic toys, 
     namely directive 2002/95/EC of the european parliament and of 
     the council of 27 january 2003 on the restriction of the use of certain hazardous
@@ -220,13 +198,14 @@ if __name__ == '__main__':
     and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."""
 
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
-    # print("ORIGINAL: {}".format(sample))
+    print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
+    res = pip.convert(sample,divNGram=False)
     # res = pip.convert_trigram(sample)
-    print(pip.norm_text_trigram(sample))
-    # res = pip.convert_trigram(sample)
+    # print(pip.norm_text_trigram(sample))
     # print(res[-1])
-    # import json
-    # print("\nEDITED: {}".format(json.dumps(res,indent=4)))
+
+    import json
+    print("\nEDITED: {}".format(json.dumps(res,indent=4)))
 
     # print(list(res.keys())[-1])
