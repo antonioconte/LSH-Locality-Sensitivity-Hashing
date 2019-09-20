@@ -150,8 +150,9 @@ class LSH():
                 return {'query': query, 'data': [], 'time': '0 ms', 'max': N, 'time_search': '0 ms',
                         'threshold': threshold}
             else:
-                tokens = query_norm.split()
-                tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
+                tokens = [ query_norm ]
+                # tokens = query_norm.split()
+                # tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
 
         start_time = time.time()
         m = MinHash(num_perm=self.permutation)
