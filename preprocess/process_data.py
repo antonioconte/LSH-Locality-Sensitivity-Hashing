@@ -19,6 +19,7 @@ import json
 import config
 import uuid
 class Processer():
+
     def __init__(self,filepath="",part=""):
         self.filepath = filepath + "total_" + part + ".json"
         self.nlp = spacy.load('en_core_web_'+config.size_nlp)
@@ -45,7 +46,6 @@ class Processer():
             docList = list(self.data['data'].keys())[:config.item_on_debug]
         else:
             docList = list(self.data['data'].keys())
-
 
         progress_doc = 0
         for docname in docList:
@@ -84,10 +84,12 @@ class Processer():
 
 
 if __name__ == '__main__':
+    config.DEBUG = True
+
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'section')
-    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
-    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'trigram')
+    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
+    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'trigram')
     print(json.dumps(p.run(), indent=4, sort_keys=True))
 
 

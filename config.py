@@ -9,13 +9,13 @@ threshold_default = {
 }
 
 FILE_TEST = True
-item_on_debug = 100
+item_on_debug = 2
 DEBUG = False
 size_nlp = "sm"
 
 permutations = 128
-num_recommendations = 5
-default_threshold = 0.0 #all
+num_recommendations = 10
+default_threshold = 0.3 #all
 METRICS = "lev"
 
 

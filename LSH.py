@@ -1,16 +1,15 @@
-import numpy as np
+from datasketch import MinHash, MinHashLSHForest
+from preprocess.text_pipeline import TextPipeline
+from preprocess.utils import cleanhtml
 from utils import metrics
+from tqdm import tqdm
 import config
 import json
-from tqdm import tqdm
-from datasketch import MinHash, MinHashLSHForest
 import pickle
-from preprocess.utils import cleanhtml
 import spacy
 import time
-from tqdm import tqdm
 import random
-from preprocess.text_pipeline import TextPipeline
+import numpy as np
 
 class LSH():
     def __init__(self,perm = config.permutations):
@@ -40,20 +39,32 @@ class LSH():
         forest = MinHashLSHForest(num_perm=config.permutations)
         num_trigram = 0
         example = []
-        for item in tqdm(data):
-            num_trigram += 1
-            tokens = item[0]['data']
-            tag = item[0]['tag']
-            if random.randint(0, 1000) == 5:
-                item_choice = tag.split("]")[1]
-                if len("".join(item_choice.split("]"))) > 8:
-                    example += [ item_choice ]
+        for item in data:
+            try:
+                string = item[0]['data']
+                tokens = string[0].split()
+                if len(tokens) < 3:
+                    # print('> min of 3',tokens)
+                    continue
+                num_trigram += 1
+                tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
 
-            m = MinHash(num_perm=config.permutations)
-            for s in tokens:
-                m.update(s.encode('utf8'))
-            forest.add(tag,m)
-            next(data)
+                # tokens = [tokens[0:2],tokens[1:]]
+                tag = item[0]['tag']
+                if random.randint(0, 1000) == 5:
+                    item_choice = tag.split("]")[1]
+                    if len("".join(item_choice.split("]"))) > 8:
+                        example += [ item_choice ]
+
+                m = MinHash(num_perm=config.permutations)
+                for s in tokens:
+                    m.update(s.encode('utf8'))
+                forest.add(tag,m)
+            except:
+                # print('err:',string,tokens)
+                continue
+
+        print("Num Trigrams: {}".format(num_trigram))
 
         forest.index()
         print('It took %.2f seconds to build forest.' % (time.time() - start_time))
@@ -112,6 +123,7 @@ class LSH():
                 part=part
             ))
             lsh = self.__train_trigram(processer,file_example=config.FILE_TEST,part=part)
+
         file = config.path_models +"_" + part
         self.__save_lsh(lsh,file)
         print("Model SAVED ~ {}".format(file))
@@ -134,12 +146,19 @@ class LSH():
             tokens = self.normalizer.convert(query, divNGram=True)
         else:
             query, query_norm = self.normalizer.norm_text_trigram(query)
-            tokens = [ query_norm ]
+            if query_norm == None:
+                return {'query': query, 'data': [], 'time': '0 ms', 'max': N, 'time_search': '0 ms',
+                        'threshold': threshold}
+            else:
+                tokens = query_norm.split()
+                tokens = [tokens[0] + " " + tokens[1], tokens[1] + " " + tokens[2]]
 
         start_time = time.time()
         m = MinHash(num_perm=self.permutation)
         for s in tokens:
             m.update(s.encode('utf8'))
+
+        # m è la query sotto forma di bucket ed N è il numero max di elementi richiesti
         idx_array = np.array(self.model.query(m, N))
 
         timing_search = "%.2f ms" % ((time.time() - start_time) * 1000)
@@ -147,60 +166,33 @@ class LSH():
         if len(idx_array) == 0:
             res_json = []
         else:
-            res_json = [
-                metrics.metric(query_norm, doc_retrival, self.normalizer,Trigram=Trigram)
-                for doc_retrival in idx_array
-            ]
-            res_json = [
-                res
-                for res in sorted(res_json, key=lambda i: i['lev'], reverse=True)
-                if float(res['lev']) >= threshold
-            ]
+            res_json = []
+            for doc_retrival in idx_array:
+                item = metrics.metric(query_norm, doc_retrival, self.normalizer,Trigram=Trigram)
+                if float(item['lev']) >= threshold:
+                    res_json += [item]
+            # ====== RE-RANKING =========================================================
+            res_json = sorted(res_json, key=lambda i: i['lev'], reverse=True)
 
         timing = "%.2f ms" % ((time.time() - start_time) * 1000)
-        # print('It took {} ms to query forest.'.format(timing))
-
         return {'query': query, 'data': res_json, 'time': timing, 'max':N, 'time_search':timing_search, 'threshold':threshold}
 
 
-
-if __name__ == '__main__':
-    model = LSH()
-
-    # ===== PRINT TEST FILE .pickle ========================
-    # type = 'section'
-    # with open('test_' + type, 'rb') as handle:
-    #     l = pickle.load(handle)
-    # [ print(i) for i in l]
-    # print("TOTAL: {}".format(len(l)))
-    # exit()
-
-    # ===== TRAIN ==========================================
-    # config.DEBUG = True
-    type = 'phrase'
-    model.train(config.filepath, type)
-    import gc
-    gc.collect()
+def train_all(model):
+    type = ['trigram', 'paragraph', 'section', 'phrase']
+    for t in type:
+        model.train(config.filepath, t)
+        import gc
+        gc.collect()
     exit()
 
-    # ===== SINGLE TEST =====================================
-    # t = "trigram"
-    # query = "This Decision will be applicable from this date of publication of the Commission Recommendation"
-    # query ="""in addition, the commission will consult member states, the stakeholders and the authority
-    #        to discuss the possibility to reduce the current maximum limits in all
-    #        meat products and to further simplify the rules for the traditionally manufactured products"""
-    # T = False
-    # if t == 'trigram':
-    #     T = True
-    # model.load_lsh("./model/model_" + t)
-    # res = model.predict(query, Trigram=T)
-    # print("Q:", query)
-    # print(json.dumps(res, ensure_ascii=False, indent=4))
-    # exit()
+def testing(model, all=True,type=''):
+    if all:
+        types = ['trigram', 'paragraph', 'section', 'phrase']
+    else:
+        types = [type]
 
-
-    # ===== TESTING ========================================
-    for t in ['trigram', 'paragraph', 'section', 'phrase'][:1]:
+    for t in types:
         empty = 0
         T = False
         if t == 'trigram':
@@ -225,8 +217,55 @@ if __name__ == '__main__':
             res = model.predict(query,Trigram=T)
             if len(res['data']) == 0:
                 empty += 1
-            # print('>>>>>>>>> ',query,'\n')
-            # print(json.dumps(res, ensure_ascii=False, indent=4))
+            print(json.dumps(res, ensure_ascii=False, indent=4))
         time.sleep(0.25)
         print("Empty Result: ", empty)
+
+        import gc
+        gc.collect()
+
+    exit()
+
+if __name__ == '__main__':
+    model = LSH()
+
+    # ===== TRAIN ALL ======================================
+    # train_all(model)
+
+    # ===== PRINT TEST FILE .pickle ========================
+    # type = 'section'
+    # with open('test_' + type, 'rb') as handle:
+    #     l = pickle.load(handle)
+    # [ print(i) for i in l]
+    # print("TOTAL: {}".format(len(l)))
+    # exit()
+
+    # ===== TESTING ========================================
+    # testing(model, all=False,type='trigram')
+
+    # ===== TRAIN ==========================================
+    # config.DEBUG = True
+    type = 'trigram'
+    model.train(config.filepath, type)
+    import gc
+    gc.collect()
+    exit()
+
+
+
+    # ===== SINGLE TEST =====================================
+    # t = "trigram"
+    # query = "This Decision will be applicable from this date of publication of the Commission Recommendation"
+    # query ="""in addition, the commission will consult member states, the stakeholders and the authority
+    #        to discuss the possibility to reduce the current maximum limits in all
+    #        meat products and to further simplify the rules for the traditionally manufactured products"""
+    # T = False
+    # if t == 'trigram':
+    #     T = True
+    # model.load_lsh("./model/model_" + t)
+    # res = model.predict(query, Trigram=T)
+    # print("Q:", query)
+    # print(json.dumps(res, ensure_ascii=False, indent=4))
+    # exit()
+
 

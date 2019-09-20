@@ -2,13 +2,12 @@ import spacy
 
 # 0. TEXT
 # 1. remove_special_pattern
-# 2. Rilevo Soggetto (Dep Parsing)
-# 3. Detect Entity (GPE)
-# 4. TOKENIZATION:
-#     - marker 2,3 con < ... >
+# 2. Detect Entity (COUNTRIES)
+# 3. TOKENIZATION:
+#     - marker 1,2 con < ... >
 #     - rm punteggiatura e stopword + lemmatization
-#     - marker <num>
-# 5. N-GRAM Gen
+#     - marker <NUM>
+# 4. N-GRAM Gen
 
 import re
 import config
@@ -116,16 +115,18 @@ class TextPipeline:
         return trigrams
 
     def norm_text_trigram(self,query):
-        ''' prende l'ultimo trigramma della stringa '''
-        # print(original, normalized[0]
-        text = self.convert_trigram(query, Train=False)[-1]
+        ''' prende l'ultimo trigramma della stringa
 
+        se la query non ha trigrami allora restituisce None che indica l'assenza di trigrammi
+        '''
+        # print(original, normalized[0]
         try:
+            text = self.convert_trigram(query, Train=False)[-1]
             original = list(text.keys())[0]
             normalized = list(text.values())[0][0]
             return original,normalized
         except:
-            return query,"___"
+            return query,None
 
     def convert(self,text,divNGram=True):
 
@@ -200,9 +201,9 @@ if __name__ == '__main__':
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    res = pip.convert(sample,divNGram=False)
+    # res = pip.convert(sample,divNGram=False)
     # res = pip.convert_trigram(sample)
-    # print(pip.norm_text_trigram(sample))
+    res = pip.norm_text_trigram("hello world")
     # print(res[-1])
 
     import json
