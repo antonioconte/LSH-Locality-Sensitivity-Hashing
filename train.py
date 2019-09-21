@@ -16,12 +16,12 @@ def train_all(k = '3'):
 
     # model = Minhash('trigram',k='3')
     # model.train(config.filepath)
-    exit()
 
 if __name__ == '__main__':
     # ===== TRAIN ALL ======================================
     # config.DEBUG = True
      # k = { '1','2', '3'}
-    train_all(k='1')
+
+    # train_all(k='1')
     train_all(k='2')
     train_all(k='3')

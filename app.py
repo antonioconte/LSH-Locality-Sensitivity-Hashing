@@ -46,7 +46,7 @@ def query():
 		maxResults = request.json['max']
 	except:
 		maxResults = config.num_recommendations
-	LSH_m = None
+	Minhash_m = None
 	T = False
 	if type == "Phrase":
 		Minhash_m = Minhash_f
@@ -58,7 +58,7 @@ def query():
 		T = True
 		Minhash_m = Minhash_t
 
-	if LSH_m == None:
+	if Minhash_m == None:
 		return app.response_class(
 			response=json.dumps({'error': 'type is not validd'}, indent=4),
 			status=505,
