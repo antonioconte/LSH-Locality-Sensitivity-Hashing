@@ -12,7 +12,7 @@ import random
 import numpy as np
 
 class Minhash():
-    def __init__(self,type, k = '3'):
+    def __init__(self,type, k = '3',isDataProc=False):
         nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.k = k
 
@@ -30,11 +30,8 @@ class Minhash():
 
         self.path_test = 'testing_file/' + "_" + self.type
 
-    def setPerm(self,p):
-        self.permutation = p
-
-    def setNumResults(self,n):
-        self.num_results = n
+        self.isDataProc = isDataProc
+        self.pathDataProc = '/home/anto/Scrivania/Tesi/testing/processed_data/'+self.type+'_'+self.k
 
     def __save(self, obj, path="model"):
         with open(self.path_model, 'wb') as f:
@@ -45,25 +42,17 @@ class Minhash():
         with (open(self.path_model, "rb")) as f:
             self.model = pickle.load(f)
 
-    def __train_trigram(self,data,file_example=False,part=""):
+    def __train_trigram(self,data):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         num_trigram = 0
-        example = []
         for item in data:
             try:
                 if len(item[0]['data'][0].split()) < 3:
                     continue
                 num_trigram += 1
-
-
                 tokens = item[0]['data']
                 tag = item[0]['tag']
-                if random.randint(0, 1000) == 5:
-                    item_choice = tag.split("]")[1]
-                    if len("".join(item_choice.split("]"))) > 8:
-                        example += [ item_choice ]
-
                 m = MinHash(num_perm=config.permutations)
                 for s in tokens:
                     m.update(s.encode('utf8'))
@@ -79,24 +68,16 @@ class Minhash():
 
         time.sleep(1)
 
-        if file_example:
-            print("=== Saving on file: test_{} ====".format(part))
-            with open('test_'+part, 'wb') as f:
-                pickle.dump(example, f)
-
         return forest
 
 
-    def __train(self,data,file_example=False):
+    def __train(self,data):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
-        example = []
         for item in tqdm(data, desc="MinHash Docs.."):
             tag = item['tag']
             tokens = item['data']
-            import random
-            if random.randint(0, 100) < 10:
-                example += [tag.split("]",1)[1]]
+
             m = MinHash(num_perm=config.permutations)
             for s in tokens:
                 m.update(s.encode('utf8'))
@@ -104,14 +85,6 @@ class Minhash():
 
         forest.index()
         print('It took %.2f seconds to build forest.' % (time.time() - start_time))
-
-        time.sleep(1)
-        if file_example:
-            if file_example:
-                print("=== Saving on file:  ====".format(self.path_test))
-                with open(self.path_test, 'wb') as f:
-                    pickle.dump(example, f)
-
         return forest
 
 
@@ -120,18 +93,21 @@ class Minhash():
         print("====== TRAINING {} [ K = {} ] ...".format(part,config.kGRAM))
         from preprocess.process_data import Processer
         if not part == "trigram":
-            processer = Processer(
-                filepath=dataset_path,
-                part=part
-            )
-            data = processer.run()
-            lsh = self.__train(data,file_example=config.FILE_TEST)
+            if self.isDataProc:
+                with open(self.pathDataProc, 'rb') as handle:
+                    data = pickle.load(handle)
+            else:
+                p = Processer(filepath=config.filepath, part=self.type)
+                data = p.run()
+                with open('/home/anto/Scrivania/Tesi/testing/processed_data/'+self.type+'_'+self.k, 'wb') as f:
+                    pickle.dump(data, f)
+            m_minhash = self.__train(data)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,
                 part=part
             ))
-            m_minhash = self.__train_trigram(processer,file_example=config.FILE_TEST,part=part)
+            m_minhash = self.__train_trigram(processer)
 
 
         self.__save(m_minhash,self.path_model)
