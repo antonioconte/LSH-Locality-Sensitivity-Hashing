@@ -1,13 +1,13 @@
 from flask_cors import CORS
 from flask import Flask,request
-from LSH import LSH
+from MinhashLSH import Minhash
 from preprocess.text_pipeline import TextPipeline
 import config
 import spacy
 import json
 from preprocess import utils
 
-LSH_f = LSH_p = LSH_s = LSH_t = None
+Minhash_f = Minhash_p = Minhash_s = Minhash_t = None
 
 app = Flask(__name__)
 
@@ -49,14 +49,14 @@ def query():
 	LSH_m = None
 	T = False
 	if type == "Phrase":
-		LSH_m = LSH_f
+		Minhash_m = Minhash_f
 	elif type == "Paragraph":
-		LSH_m = LSH_p
+		Minhash_m = Minhash_p
 	elif type == "Section":
-		LSH_m = LSH_s
+		Minhash_m = Minhash_s
 	elif type == "TriGram":
 		T = True
-		LSH_m = LSH_t
+		Minhash_m = Minhash_t
 
 	if LSH_m == None:
 		return app.response_class(
@@ -65,7 +65,7 @@ def query():
 			mimetype='application/json'
 		)
 
-	result = LSH_m.predict(query,threshold=threshold,N=maxResults,Trigram=T)
+	result = Minhash_m.predict(query,threshold=threshold,N=maxResults,Trigram=T)
 
 	response = app.response_class(
 		response=json.dumps(result, indent=4),
@@ -77,29 +77,29 @@ def query():
 @app.route('/connect/', methods=['GET'])
 def connect():
 	k = str(request.args.get('k', default=3, type=int))
-	global LSH_f
-	global LSH_p
-	global LSH_s
-	global LSH_t
+	global Minhash_f
+	global Minhash_p
+	global Minhash_s
+	global Minhash_t
 
 	models = []
 	msg = "NOT GOOD"
 	# load model phrase
 
-	LSH_f = LSH('phrase',k=k)
-	LSH_f.load_lsh()
+	Minhash_f = Minhash('phrase',k=k)
+	Minhash_f.load()
 	models.append("Phrase_"+k)
 
-	LSH_p = LSH('paragraph',k=k)
-	LSH_p.load_lsh()
+	Minhash_p = Minhash('paragraph',k=k)
+	Minhash_p.load()
 	models.append("Paragraph_"+k)
 
-	LSH_s = LSH('section',k=k)
-	LSH_s.load_lsh()
+	Minhash_s = Minhash('section',k=k)
+	Minhash_s.load()
 	models.append("Section_"+k)
 
-	LSH_t = LSH('trigram',k=k)
-	LSH_t.load_lsh()
+	Minhash_t = Minhash('trigram',k=k)
+	Minhash_t.load()
 	models.append("TriGram")
 
 
