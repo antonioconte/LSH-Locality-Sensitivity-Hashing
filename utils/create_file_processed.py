@@ -1,5 +1,5 @@
 import json
-from preprocess import process_data
+import process_data
 import pickle
 
 # path_train = '/home/anto/Scrivania/Tesi/dataset_train/'
