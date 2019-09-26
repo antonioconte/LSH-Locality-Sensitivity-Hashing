@@ -12,10 +12,9 @@ import random
 import numpy as np
 
 class Minhash():
-    def __init__(self,type, k = '3',isDataProc=False):
+    def __init__(self,type, k = '3'):
         nlp = spacy.load('en_core_web_'+config.size_nlp)
         self.k = k
-
         self.entryname = 'Minhash_K_'+self.k
         config.kGRAM = self.k
         self.normalizer = TextPipeline(nlp)
@@ -29,9 +28,8 @@ class Minhash():
             self.path_model = config.path_models + "_" + self.type + "_" + self.k
 
         self.path_test = 'testing_file/' + "_" + self.type
+        self.pathDataProc = config.pathDataProc.format(self.type,self.k)
 
-        self.isDataProc = isDataProc
-        self.pathDataProc = '/home/anto/Scrivania/Tesi/testing/processed_data/'+self.type+'_'+self.k
 
     def __save(self, obj, path="model"):
         with open(self.path_model, 'wb') as f:
@@ -93,14 +91,9 @@ class Minhash():
         print("====== TRAINING {} [ K = {} ] ...".format(part,config.kGRAM))
         from preprocess.process_data import Processer
         if not part == "trigram":
-            if self.isDataProc:
-                with open(self.pathDataProc, 'rb') as handle:
-                    data = pickle.load(handle)
+           with open(self.pathDataProc, 'rb') as handle:
+                data = pickle.load(handle)
                 m_minhash = self.__train(data)
-
-            else:
-                print("self.isDataProc dev'essere True")
-                exit(1)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,

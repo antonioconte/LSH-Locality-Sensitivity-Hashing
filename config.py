@@ -36,7 +36,7 @@ abbr_dict = {
     'EFSA': 'European Food Safety Authority'
 }
 abbr_expand = "|".join(list(abbr_dict.keys()))
-
+pathDataProc = '/home/anto/Scrivania/Tesi/testing/processed_data/{}_{}'
 ip = socket.gethostbyname(socket.gethostname())
 
 wordBased = True

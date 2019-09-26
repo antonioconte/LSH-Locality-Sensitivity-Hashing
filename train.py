@@ -9,7 +9,7 @@ import json
 def train_all(k = '3'):
     type = ['paragraph', 'section', 'phrase']
     for t in type:
-        model = Minhash(t, k=k,isDataProc=True)
+        model = Minhash(t, k=k)
         model.train(config.filepath)
         import gc
         gc.collect()
