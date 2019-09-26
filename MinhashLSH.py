@@ -133,7 +133,7 @@ class Minhash():
         for s in tokens:
             m.update(s.encode('utf8'))
 
-        # m è la query sotto forma di bucket ed N è il numero max di elementi richiesti
+        # m e' la query sotto forma di bucket ed N e' il numero max di elementi richiesti
         idx_array = np.array(self.model.query(m, N))
 
         timing_search = "%.2f ms" % ((time.time() - start_time) * 1000)
