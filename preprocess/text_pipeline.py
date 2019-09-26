@@ -141,7 +141,7 @@ class TextPipeline:
         (text, special_pattern_list) = self.remove_special_pattern(text)
 
         list_Ent = ['COUNTRY']
-        text = re.sub(config.countries_patt, 'COUNTRY', text)
+        text = re.sub(config.countries_patt, 'COUNTRY', text, flags=re.IGNORECASE)
 
         text = self.expand_abbr(text)
         doc = self.nlp(text)
@@ -185,25 +185,13 @@ def mark_date(text):
 if __name__ == '__main__':
 
     nlp = spacy.load('en_core_web_'+config.size_nlp)
-    sample = """(25) Italy Germany the general and specific chemical requirements laid down by this directive 
-    should aim at protecting the health of children from certain substances in toys, 
-    while the 18 environmental concerns presented by toys are addressed by 
-    horizontal environmental legislation applying to electrical and electronic toys, 
-    namely directive 2002/95/EC of the european parliament and of 
-    the council of 27 january 2003 on the restriction of the use of certain hazardous
-    substances in electrical and electronic equipment and directive 2002/96/EC of 
-    the european parliament and of the council of 27 january 2003 on waste electrical and electronic 
-    equipment. in addition, environmental issues on waste are regulated by directive 2006/12/EC 
-    of the european parliament and of the council of 5 april 2006, those on packaging and 
-    packaging waste by directive 94/62/EC of the european parliament and of the council 
-    of 20 december 1994 and those on batteries and accumulators and waste batteries 
-    and accumulators by directive 2006/66/EC of the european parliament and of the council of 6 september 2006."""
+    sample = """In italy, the specific chemical requirements laid down by this directive should aim at protecting the health of children from             certain substances in toys, while the 18 environmental concerns presented by toys are addressed by horizontal environmental               legislation applying to electrical and electronic toys,              namely directive 2002/95/EC of the European parliament and of the council of 27 january 2003."""
     # config.kGRAM = 1
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    res = pip.norm_text_trigram(sample)
-    # res = pip.convert_trigram(sample)
+    # res = pip.norm_text_trigram(sample)
+    res = pip.convert(sample)
     # res = pip.norm_text_trigram("hello world")
     # print(res[-1])
 

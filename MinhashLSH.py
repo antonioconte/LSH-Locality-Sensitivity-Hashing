@@ -96,12 +96,11 @@ class Minhash():
             if self.isDataProc:
                 with open(self.pathDataProc, 'rb') as handle:
                     data = pickle.load(handle)
+                m_minhash = self.__train(data)
+
             else:
-                p = Processer(filepath=config.filepath, part=self.type)
-                data = p.run()
-                with open('/home/anto/Scrivania/Tesi/testing/processed_data/'+self.type+'_'+self.k, 'wb') as f:
-                    pickle.dump(data, f)
-            m_minhash = self.__train(data)
+                print("self.isDataProc dev'essere True")
+                exit(1)
         else:
             processer = iter(Processer(
                 filepath=dataset_path,
