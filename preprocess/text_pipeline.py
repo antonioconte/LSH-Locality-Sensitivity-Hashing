@@ -64,21 +64,22 @@ class TextPipeline:
                 edited = edited.replace(token,"<date>")
                 original_data = " ".join(token.split("DATE_")[1].split("_"))
                 original = original.replace(token,original_data)
-            if 'NUMSLASH' in token:
+            if 'NUMSLASH_' in token:
                 edited = edited.replace(token, "<numslash>")
+                original_data = token.split("NUMSLASH_")[1]
+                original = original.replace(token, original_data)
             elif token in self.stopwords:
                 edited = edited.replace(token, "")
-            edited = self.expand_abbr(edited)
 
+        edited = self.expand_abbr(edited)
         edited = " ".join(edited.lower().replace(","," ").replace("."," ").split())
 
 
         return original, edited
 
     def convert_trigram(self,text,Train=True):
-        text = mark_date(text)
-        text,_ = self.remove_special_pattern(text)
-
+        text = mark(text)
+        # text,_ = self.remove_special_pattern(text)
         tokens = text.split()
         if Train:
             trigrams = {}
@@ -90,6 +91,11 @@ class TextPipeline:
             k = 0
             pos_current = i
             while k < 3:
+                if k == 0 and tokens[pos_current] in self.stopwords:
+                    pos_current += 1
+                    if pos_current >= len(tokens) - 1:
+                        break
+                    continue
                 # se non è una stopword
                 if not tokens[pos_current] in self.stopwords:
                     current_trigrams += " " + tokens[pos_current]
@@ -99,6 +105,7 @@ class TextPipeline:
 
                 if k == 3:
                     text_trigram, normalized_trigram = self.norm_trigram(current_trigrams.strip())
+
                     if Train:
                         trigrams[text_trigram] = [normalized_trigram]
                     else:
@@ -108,16 +115,10 @@ class TextPipeline:
 
                 pos_current += 1
 
-        # import json
-        # print(json.dumps(trigrams,indent=4,sort_keys=False))
-        # exit()
-
-
         return trigrams
 
-    def norm_text_trigram(self,query):
+    def get_last_trigram(self,query):
         ''' prende l'ultimo trigramma della stringa
-
         se la query non ha trigrami allora restituisce None che indica l'assenza di trigrammi
         '''
         # print(original, normalized[0]
@@ -163,21 +164,31 @@ class TextPipeline:
             return " ".join(words)
 
 
-def get_list_date(text, result=[]):
-    date = re.search(config.date_pattern, text, flags=re.IGNORECASE)
-    if not date:
+def get_list(text, pattern, result=[]):
+    _list = re.search(pattern, text, flags=re.IGNORECASE)
+    if not _list:
         return result
-    result += [date.group(0)]
-    end = date.end()
+    result += [_list.group(0)]
+    end = _list.end()
     text = text[end:]
-    return list(set(get_list_date(text, result)))
+    return list(set(get_list(text, pattern, result)))
 
-def mark_date(text):
-    date_list = get_list_date(text)
-    if len(date_list) == 0:
-        return text
-    for d in date_list:
-        text = re.sub(d, "DATE_" + "_".join(d.split()), text)
+def mark(text):
+    marked = [
+        (config.date_pattern,'DATE_'),
+        ("\d+/\d+",'NUMSLASH_')
+    ]
+    for patt,place in marked:
+        _list = []
+        _list = get_list(text,patt)
+        if len(_list) == 0:
+            continue
+        for d in _list:
+            if place == 'DATE_':
+                text = re.sub(d, place + "_".join(d.split()), text)
+            elif place == 'NUMSLASH_':
+                text = re.sub(d, place + d, text)
+
     return text
 
 
@@ -185,16 +196,14 @@ def mark_date(text):
 if __name__ == '__main__':
 
     nlp = spacy.load('en_core_web_'+config.size_nlp)
-    sample = """In italy, the specific chemical requirements laid down by this directive should aim at protecting the health of children from             certain substances in toys, while the 18 environmental concerns presented by toys are addressed by horizontal environmental               legislation applying to electrical and electronic toys,              namely directive 2002/95/EC of the European parliament and of the council of 27 january 2003."""
+    sample = """In italy, the specific 50/120 chemical 20 December 2014 requirements laid down by this directive should aim at protecting the health of children from             certain substances in toys, while the 18 environmental concerns presented by toys are addressed by horizontal environmental               legislation applying to electrical and electronic toys,              namely directive 2002/95/EC of the European parliament and of the council of 27 january 2003."""
     # config.kGRAM = 1
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
-    # res = pip.norm_text_trigram(sample)
-    res = pip.convert(sample)
-    # res = pip.norm_text_trigram("hello world")
-    # print(res[-1])
-
+    # res = pip.convert(sample)
+    # res = pip.get_last_trigram(sample)
+    res = pip.convert_trigram(sample)
     import json
     print("\nEDITED: {}".format(json.dumps(res,indent=4)))
 

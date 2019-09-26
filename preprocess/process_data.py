@@ -89,8 +89,12 @@ if __name__ == '__main__':
 
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'paragraph')
     # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'section')
-    p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
-    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'trigram')
-    print(json.dumps(p.run(), indent=4, sort_keys=True))
+    # p = Processer('/home/anto/Scrivania/Tesi/dataset_train/', 'phrase')
+
+
+    processer = iter(Processer('/home/anto/Scrivania/Tesi/dataset_train/','trigram'))
+    for item in processer:
+        print(item)
+    # print(json.dumps(p.run(), indent=4, sort_keys=True))
 
 

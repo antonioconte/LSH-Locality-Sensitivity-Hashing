@@ -9,7 +9,7 @@ threshold_default = {
 }
 kGRAM = '3'
 FILE_TEST = True
-item_on_debug = 2
+item_on_debug = 20
 DEBUG = False
 size_nlp = "sm"
 

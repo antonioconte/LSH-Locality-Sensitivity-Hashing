@@ -101,7 +101,6 @@ class Minhash():
             ))
             m_minhash = self.__train_trigram(processer)
 
-
         self.__save(m_minhash,self.path_model)
         print("Model SAVED ~ {}".format(self.path_model))
         print("================================")
@@ -122,7 +121,7 @@ class Minhash():
             # True per la fase di predict
             tokens = self.normalizer.convert(query, divNGram=True)
         else:
-            query, query_norm = self.normalizer.norm_text_trigram(query)
+            query, query_norm = self.normalizer.get_last_trigram(query)
             if query_norm == None:
                 return {'query': query, 'data': [], 'time': '0 ms', 'max': N, 'time_search': '0 ms',
                         'threshold': threshold}
