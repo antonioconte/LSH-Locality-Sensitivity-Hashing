@@ -1,5 +1,4 @@
 import json
-import config
 from preprocess import process_data
 import pickle
 
