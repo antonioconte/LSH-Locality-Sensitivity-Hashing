@@ -1,12 +1,12 @@
 import json
-import process_data
+from preprocess import process_data
 import pickle
 
-# path_train = '/home/anto/Scrivania/Tesi/dataset_train/'
-path_train = '/home/web/site181928/html/json_train/'
+path_train = '/home/anto/Scrivania/Tesi/dataset_train/'
+# path_train = '/home/web/site181928/html/json_train/'
 
-# path_save = '/home/anto/Scrivania/Tesi/testing/processed_data/trigrams/trigram_'
-path_save = '/public/antonio_conteduca/processed_data/trigrams/trigram_'
+path_save = '/home/anto/Scrivania/Tesi/testing/processed_data/trigrams/trigram_'
+# path_save = '/public/antonio_conteduca/processed_data/trigrams/trigram_'
 
 # ========= TRIGRAM ============================
 processer = iter(process_data.Processer(path_train, 'trigram'))
