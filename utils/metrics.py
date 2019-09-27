@@ -15,9 +15,11 @@ def metric(query_norm, doc, normalizer,Trigram = False):
     '''
     (tag,text) = doc.split("]",1)
     if Trigram:
-        _,text_norm = normalizer.norm_text_trigram(text)
+        _,text_norm = normalizer.get_last_trigram(text)
     else:
         text_norm = normalizer.convert(text, False)
+
+    text_norm = str.lower(text_norm)
 
     # print("QUERY", query_norm)
     # print("RES", text_norm)

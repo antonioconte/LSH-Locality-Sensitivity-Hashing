@@ -51,4 +51,12 @@ def testing(all=True,type='',k='3'):
 if __name__ == '__main__':
     # ===== TESTING =======================================
     # type, k = 'phrase', '3'
-    testing()
+    # testing()
+    # exit()
+#     TRIGRAMMM
+    query = "asdaohuasf uwofowfejr oerguj eouhlegh le  flrefkd knfkdf kdnwfle feoifleirfelrferieel e lfjsnd lorem lorem council of 22 november 2012 on quality"
+    model = Minhash('trigram',k='3')
+    model.load()
+    res = model.predict(query)
+    import json
+    print(json.dumps(res,indent=4))

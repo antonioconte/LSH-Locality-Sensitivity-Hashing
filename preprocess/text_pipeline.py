@@ -27,6 +27,15 @@ class TextPipeline:
         tokens = [" ".join(tokens[i:i + k]).lower() for i in range(len(tokens) - k + 1)]
         return tokens
 
+    def generate_ngrams_char(self, string, n=10):
+        string = " ".join(string.split())
+        if len(string) <= n:
+            return  [string]
+        return [string[i:i + n] for i in range(len(string) - 1) if i+n <= len(string)]
+
+
+
+
     def expand_abbr(self, text):
         text = re.sub(r'\(('+config.abbr_expand+')\)', '', text) #rimuove gli eventuali abbr_dict in parentesi
         for a in list(config.abbr_dict.keys()):
@@ -201,6 +210,10 @@ if __name__ == '__main__':
     # sample = "in addition, the commission will consult member states, the stakeholders and the authority to discuss the possibility to reduce the current maximum limits in all meat products and to further simplify the rules for the traditionally manufactured products"
     print("ORIGINAL: {}".format(sample))
     pip = TextPipeline(nlp)
+
+
+    [ print(">",i) for i in pip.generate_ngrams_char(sample)]
+    exit()
     # res = pip.convert(sample)
     # res = pip.get_last_trigram(sample)
     res = pip.convert_trigram(sample)

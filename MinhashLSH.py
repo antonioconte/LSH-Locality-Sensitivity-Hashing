@@ -24,10 +24,10 @@ class Minhash():
         self.path_model = ""
         if self.type in 'trigram':
             self.path_model = config.path_models + "_" + self.type
+            self.k = '3'
         else:
             self.path_model = config.path_models + "_" + self.type + "_" + self.k
 
-        self.path_test = 'testing_file/' + "_" + self.type
         self.pathDataProc = config.pathDataProc.format(self.type,self.k)
 
 
@@ -40,42 +40,16 @@ class Minhash():
         with (open(self.path_model, "rb")) as f:
             self.model = pickle.load(f)
 
-    def __train_trigram(self,data):
-        start_time = time.time()
-        forest = MinHashLSHForest(num_perm=config.permutations)
-        num_trigram = 0
-        for item in data:
-            try:
-                if len(item[0]['data'][0].split()) < 3:
-                    continue
-                num_trigram += 1
-                tokens = item[0]['data']
-                tag = item[0]['tag']
-                m = MinHash(num_perm=config.permutations)
-                for s in tokens:
-                    m.update(s.encode('utf8'))
-                forest.add(tag,m)
-            except:
-                # print('err:',string,tokens)
-                continue
 
-        print("Num Trigrams: {}".format(num_trigram))
-
-        forest.index()
-        print('It took %.2f seconds to build forest.' % (time.time() - start_time))
-
-        time.sleep(1)
-
-        return forest
-
-
-    def __train(self,data):
+    def __train_LSH(self,data):
         start_time = time.time()
         forest = MinHashLSHForest(num_perm=config.permutations)
         for item in tqdm(data, desc="MinHash Docs.."):
             tag = item['tag']
             tokens = item['data']
 
+            if self.type == 'trigram':
+                tokens = self.normalizer.generate_ngrams_char(tokens[0])
             m = MinHash(num_perm=config.permutations)
             for s in tokens:
                 m.update(s.encode('utf8'))
@@ -86,20 +60,12 @@ class Minhash():
         return forest
 
 
-    def train(self,dataset_path):
+    def train(self):
         part = self.type
         print("====== TRAINING {} [ K = {} ] ...".format(part,config.kGRAM))
-        from preprocess.process_data import Processer
-        if not part == "trigram":
-           with open(self.pathDataProc, 'rb') as handle:
-                data = pickle.load(handle)
-                m_minhash = self.__train(data)
-        else:
-            processer = iter(Processer(
-                filepath=dataset_path,
-                part=part
-            ))
-            m_minhash = self.__train_trigram(processer)
+        with open(self.pathDataProc, 'rb') as handle:
+            data = pickle.load(handle)
+            m_minhash = self.__train_LSH(data)
 
         self.__save(m_minhash,self.path_model)
         print("Model SAVED ~ {}".format(self.path_model))
@@ -116,17 +82,22 @@ class Minhash():
 
         query = cleanhtml(query)
 
-        if not Trigram:
+        if self.type != 'trigram':
+            Trigram = False
             query_norm = self.normalizer.convert(query,False)
-            # True per la fase di predict
-            tokens = self.normalizer.convert(query, divNGram=True)
+            tokens = self.normalizer.convert(query)
         else:
             query, query_norm = self.normalizer.get_last_trigram(query)
             if query_norm == None:
-                return {'query': query, 'data': [], 'time': '0 ms', 'max': N, 'time_search': '0 ms',
+                return {'query': query,
+                        'data': [],
+                        'time': '0 ms',
+                        'max': N,
+                        'time_search': '0 ms',
                         'threshold': threshold}
             else:
-                tokens = [ query_norm ]
+                Trigram = True
+                tokens = self.normalizer.generate_ngrams_char(query_norm)
 
         start_time = time.time()
         m = MinHash(num_perm=self.permutation)
@@ -141,6 +112,7 @@ class Minhash():
         if len(idx_array) == 0:
             res_json = []
         else:
+
             res_json = []
             for doc_retrival in idx_array:
                 item = metrics.metric(query_norm, doc_retrival, self.normalizer,Trigram=Trigram)

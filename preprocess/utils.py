@@ -10,11 +10,11 @@ def preprocess(text,k=3):
     return tokens
 
 def cleanhtml(raw_html):
-  cleanr = re.compile('<.*?>')
-  cleantext = re.sub(cleanr, ' ', raw_html)
-  cleanr = re.compile('&nbsp;')
-  cleantext = " ".join(re.sub(cleanr, '', cleantext).split())
-  return cleantext
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, ' ', raw_html)
+    cleanr = re.compile('&nbsp;')
+    cleantext = " ".join(re.sub(cleanr, '', cleantext).split())
+    return cleantext
 
 
 # sample = """
